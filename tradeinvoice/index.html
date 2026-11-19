@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TradeInvoice — Estimates &amp; Invoices for Trades</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <div class="brand">
+    <span class="logo-mark" aria-hidden="true">🧾</span>
+    <div class="brand-text">
+      <strong id="brandName">TradeInvoice</strong>
+      <small>Estimates &amp; Invoices</small>
+    </div>
+  </div>
+  <button id="proBtn" class="pro-btn" type="button">⭐ Go Pro · $9.99/mo</button>
+</header>
+
+<nav class="tabs" aria-label="Main navigation">
+  <button type="button" class="tab active" data-view="dashboard">📊<span>Dashboard</span></button>
+  <button type="button" class="tab" data-view="documents">📄<span>Documents</span></button>
+  <button type="button" class="tab" data-view="clients">👥<span>Clients</span></button>
+  <button type="button" class="tab" data-view="settings">⚙️<span>Settings</span></button>
+</nav>
+
+<main id="main">
+  <!-- DASHBOARD -->
+  <section id="view-dashboard" class="view active" aria-label="Dashboard">
+    <div class="stat-grid">
+      <div class="stat-card"><span class="stat-label">Outstanding</span><strong class="stat-value" id="statOutstanding">$0.00</strong><small class="stat-sub" id="statOutstandingSub">0 unpaid invoices</small></div>
+      <div class="stat-card"><span class="stat-label">Paid this month</span><strong class="stat-value green" id="statPaidMonth">$0.00</strong><small class="stat-sub" id="statPaidMonthSub">—</small></div>
+      <div class="stat-card"><span class="stat-label">Overdue</span><strong class="stat-value red" id="statOverdue">0</strong><small class="stat-sub">invoices past due</small></div>
+      <div class="stat-card"><span class="stat-label">Documents this month</span><strong class="stat-value" id="statDocsMonth">0 / 3</strong><small class="stat-sub" id="statDocsMonthSub">Free plan</small></div>
+    </div>
+
+    <div class="quick-actions">
+      <button type="button" class="btn btn-primary btn-lg" id="qaNewEstimate">＋ New Estimate</button>
+      <button type="button" class="btn btn-accent btn-lg" id="qaNewInvoice">＋ New Invoice</button>
+    </div>
+
+    <h2 class="section-title">Recent documents</h2>
+    <div id="recentDocs" class="doc-list"></div>
+  </section>
+
+  <!-- DOCUMENTS -->
+  <section id="view-documents" class="view" aria-label="Documents">
+    <div class="toolbar">
+      <input type="search" id="docSearch" placeholder="🔍 Search by #, client, or item…" aria-label="Search documents">
+      <div class="filter-row" id="docFilters">
+        <button type="button" class="chip active" data-filter="all">All</button>
+        <button type="button" class="chip" data-filter="estimate">Estimates</button>
+        <button type="button" class="chip" data-filter="invoice">Invoices</button>
+        <button type="button" class="chip" data-filter="draft">Draft</button>
+        <button type="button" class="chip" data-filter="sent">Sent</button>
+        <button type="button" class="chip" data-filter="paid">Paid</button>
+        <button type="button" class="chip" data-filter="overdue">Overdue</button>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <button type="button" class="btn btn-primary" id="docsNewEstimate">＋ New Estimate</button>
+      <button type="button" class="btn btn-accent" id="docsNewInvoice">＋ New Invoice</button>
+    </div>
+    <div id="docList" class="doc-list"></div>
+  </section>
+
+  <!-- CLIENTS -->
+  <section id="view-clients" class="view" aria-label="Clients">
+    <div class="toolbar">
+      <input type="search" id="clientSearch" placeholder="🔍 Search clients…" aria-label="Search clients">
+      <button type="button" class="btn btn-primary" id="addClientBtn">＋ Add Client</button>
+    </div>
+    <div id="clientList" class="client-list"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="view-settings" class="view" aria-label="Settings">
+    <h2 class="section-title">Business profile</h2>
+    <form id="profileForm" class="card form-card" autocomplete="off">
+      <label>Business name
+        <input type="text" id="pfBusinessName" placeholder="e.g. Rivera Plumbing &amp; Heating">
+      </label>
+      <label>Owner name
+        <input type="text" id="pfOwnerName" placeholder="Your name">
+      </label>
+      <label>Phone
+        <input type="tel" id="pfPhone" placeholder="(570) 555-0100">
+      </label>
+      <label>Email
+        <input type="email" id="pfEmail" placeholder="you@yourbusiness.com">
+      </label>
+      <label>Address
+        <textarea id="pfAddress" rows="2" placeholder="Street, City, State ZIP"></textarea>
+      </label>
+      <div class="form-row">
+        <label>Default tax rate (%)
+          <input type="number" id="pfTaxRate" min="0" max="30" step="0.01" placeholder="6">
+        </label>
+        <label>Invoice due in (days)
+          <input type="number" id="pfDueDays" min="0" max="90" step="1" placeholder="14">
+        </label>
+      </div>
+      <label>Default payment terms
+        <textarea id="pfTerms" rows="3" placeholder="Payment due within 14 days. Checks payable to…"></textarea>
+      </label>
+      <label>Logo
+        <span class="logo-row">
+          <img id="logoPreview" class="logo-preview" alt="Business logo preview" hidden>
+          <span class="logo-actions">
+            <input type="file" id="pfLogo" accept="image/*" hidden>
+            <button type="button" class="btn btn-secondary" id="logoUploadBtn">Upload logo</button>
+            <button type="button" class="btn btn-ghost" id="logoRemoveBtn">Remove</button>
+          </span>
+        </span>
+      </label>
+      <button type="submit" class="btn btn-primary btn-lg">Save business profile</button>
+    </form>
+
+    <h2 class="section-title">Your plan</h2>
+    <div class="card plan-card">
+      <div><strong id="planName">Free plan</strong><p id="planUsage">0 of 3 free documents used this month.</p></div>
+      <button type="button" class="btn btn-accent" id="planUpgradeBtn">Go Pro — $9.99/mo</button>
+    </div>
+
+    <h2 class="section-title">Your data</h2>
+    <div class="card data-card">
+      <p class="muted">Everything is stored on this device only (localStorage). Export a backup regularly — if you clear browser data, your invoices go with it.</p>
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" id="exportBtn">⬇ Export backup (JSON)</button>
+        <button type="button" class="btn btn-secondary" id="importBtn">⬆ Import backup</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-ghost" id="clearSampleBtn">Clear sample data</button>
+        <button type="button" class="btn btn-danger" id="resetAllBtn">Reset everything</button>
+      </div>
+    </div>
+    <p class="muted center">TradeInvoice v1 · Built for one-person trade businesses.</p>
+  </section>
+
+  <!-- DOCUMENT DETAIL / EDITOR -->
+  <section id="view-doc" class="view" aria-label="Document">
+    <div id="docDetail"></div>
+  </section>
+</main>
+
+<!-- CLIENT MODAL -->
+<div id="clientModal" class="modal" hidden>
+  <div class="modal-card">
+    <h3 id="clientModalTitle">Add client</h3>
+    <form id="clientForm" autocomplete="off">
+      <input type="hidden" id="cfId">
+      <label>Name *
+        <input type="text" id="cfName" required placeholder="Client or company name">
+      </label>
+      <label>Phone
+        <input type="tel" id="cfPhone" placeholder="(570) 555-0100">
+      </label>
+      <label>Email
+        <input type="email" id="cfEmail" placeholder="client@email.com">
+      </label>
+      <label>Address
+        <textarea id="cfAddress" rows="2" placeholder="Street, City, State ZIP"></textarea>
+      </label>
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">Save client</button>
+        <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PRO MODAL -->
+<div id="proModal" class="modal" hidden>
+  <div class="modal-card">
+    <h3>⭐ TradeInvoice Pro — $9.99/month</h3>
+    <p class="muted">You're on the Free plan: <strong id="proUsageText">0 of 3 documents</strong> used this month.</p>
+    <ul class="pro-list">
+      <li>✅ <strong>Unlimited</strong> estimates &amp; invoices — no monthly cap</li>
+      <li>✅ Unlimited clients</li>
+      <li>✅ Your logo on every printed estimate &amp; invoice</li>
+      <li>✅ Priority support</li>
+    </ul>
+    <p class="muted small">Free plan: 3 documents per month. Pro is $9.99/month, cancel anytime.</p>
+    <div class="btn-row">
+      <button type="button" class="btn btn-accent btn-lg" id="proCheckoutBtn">Upgrade — $9.99/mo</button>
+      <button type="button" class="btn btn-ghost" data-close-modal>Not now</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="modal" hidden>
+  <div class="modal-card">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmText" class="muted"></p>
+    <div class="btn-row">
+      <button type="button" class="btn btn-danger" id="confirmYes">Yes, do it</button>
+      <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="print-area" aria-hidden="true"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
