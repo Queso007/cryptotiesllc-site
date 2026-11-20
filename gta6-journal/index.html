@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GTA 6 Secrets Journal — Every secret in Leonida</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+  <div class="brand">
+    <span class="logo-mark" aria-hidden="true">🗺️</span>
+    <div>
+      <h1>GTA 6 Secrets Journal</h1>
+      <p class="tagline">Every secret car, stash, treasure &amp; hidden place in Leonida — check them off as you find them.</p>
+    </div>
+  </div>
+  <div class="overall">
+    <div class="overall-text"><span id="overallCount">0 / 42 found</span><span id="overallPct">0%</span></div>
+    <div class="progress"><div class="progress-fill" id="overallFill" style="width:0%"></div></div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs" aria-label="Sections"></nav>
+
+<div class="toolbar">
+  <input type="search" id="search" placeholder="Search secrets by name or area…" aria-label="Search secrets">
+</div>
+
+<section class="map-card">
+  <h2>Leonida — schematic map</h2>
+  <p class="map-note">Schematic only, not to scale. Dots mark the approximate area of each secret in the open section — guides give landmarks and street names, not coordinates. Tap a dot to jump to its entry.</p>
+  <div class="map-wrap" id="mapWrap"></div>
+</section>
+
+<main id="entries" class="entries"></main>
+
+<section class="lock-panel" id="lockPanel" hidden>
+  <div class="lock-icon" aria-hidden="true">🔒</div>
+  <h2 id="lockTitle">This section is locked</h2>
+  <p id="lockText"></p>
+  <button class="unlock-btn" id="unlockBtn">Unlock for $2.00</button>
+  <p class="lock-fine" id="lockFine"></p>
+</section>
+
+<footer>
+  <p>Unofficial fan guide. Not affiliated with, endorsed by, or connected to Rockstar Games or Take-Two Interactive. Grand Theft Auto and GTA are trademarks of Take-Two Interactive.</p>
+  <p>Entries compiled from published launch-day guides (Nov 19–20, 2026). "Verified" means at least two independent guides agree; single-source entries are marked and may change as the community maps Leonida. Prices in USD.</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
