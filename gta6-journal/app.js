@@ -154,7 +154,7 @@
         '<div><h3>' + (i + 1) + '. ' + esc(e.name) + '</h3>' +
         '<div class="area">' + esc(e.area) + '</div>' +
         (sketch ? '<div class="sketch">' + sketch +
-          '<p class="sketch-cap">Sketch — schematic, not to scale</p></div>' : '') +
+          '<p class="sketch-cap">Sketch — schematic, not to scale · tap to zoom</p></div>' : '') +
         '<p><b>Where:</b> ' + esc(e.location) + '</p>' +
         '<p><b>How to get it:</b> ' + esc(e.how) + '</p>' + badge + '</div></div></article>';
     }).join('');
@@ -194,6 +194,109 @@
     toast('Unlocks are purchased in the Play Store app ($2.00 per section). Web preview: add ?unlock=all to the URL.');
   });
 
+  // ---- full-screen zoom viewer for the main map and per-entry sketches ----
+  var zoomOverlay = document.getElementById('zoomOverlay');
+  var zoomStage = document.getElementById('zoomStage');
+  var zoomContent = null;
+  var zScale = 1, zX = 0, zY = 0;
+  var zPointers = new Map();
+  var zPinch = null; // { d0, s0, x0, y0 }
+  var zMoved = 0, zDownBackdrop = false;
+
+  function zClamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function zApply() {
+    if (zoomContent) zoomContent.style.transform = 'translate(' + zX + 'px,' + zY + 'px) scale(' + zScale + ')';
+  }
+  function zClampPan() {
+    var mx = zoomStage.clientWidth, my = zoomStage.clientHeight;
+    zX = zClamp(zX, -mx, mx); zY = zClamp(zY, -my, my);
+  }
+  function zZoomAt(cx, cy, factor) {
+    var ns = zClamp(zScale * factor, 1, 6);
+    zX = cx - (cx - zX) * (ns / zScale);
+    zY = cy - (cy - zY) * (ns / zScale);
+    zScale = ns; zClampPan(); zApply();
+  }
+  function zReset() { zScale = 1; zX = 0; zY = 0; zApply(); }
+  function zOpen(svgHtml, kind) {
+    zoomStage.innerHTML = '<div class="zoom-content ' + kind + '">' + svgHtml + '</div>';
+    zoomContent = zoomStage.firstChild;
+    zReset();
+    zoomOverlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function zClose() {
+    zoomOverlay.hidden = true;
+    zoomStage.innerHTML = ''; zoomContent = null;
+    document.body.style.overflow = '';
+  }
+  function zStageCenter(ev) {
+    var r = zoomStage.getBoundingClientRect();
+    return { x: ev.clientX - (r.left + r.width / 2), y: ev.clientY - (r.top + r.height / 2) };
+  }
+  function initZoom() {
+    document.getElementById('zoomClose').addEventListener('click', zClose);
+    document.getElementById('zoomIn').addEventListener('click', function () { zZoomAt(0, 0, 1.5); });
+    document.getElementById('zoomOut').addEventListener('click', function () { zZoomAt(0, 0, 1 / 1.5); });
+    document.getElementById('zoomReset').addEventListener('click', zReset);
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !zoomOverlay.hidden) zClose(); });
+    zoomStage.addEventListener('wheel', function (ev) {
+      ev.preventDefault();
+      var c = zStageCenter(ev);
+      zZoomAt(c.x, c.y, ev.deltaY < 0 ? 1.15 : 1 / 1.15);
+    }, { passive: false });
+    zoomStage.addEventListener('pointerdown', function (ev) {
+      zDownBackdrop = (ev.target === zoomStage);
+      zMoved = 0;
+      try { zoomStage.setPointerCapture(ev.pointerId); } catch (e) { /* synthetic events */ }
+      zPointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (zPointers.size === 2) {
+        var pts = Array.from(zPointers.values());
+        zPinch = { d0: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y), s0: zScale, x0: zX, y0: zY };
+      }
+    });
+    zoomStage.addEventListener('pointermove', function (ev) {
+      if (!zPointers.has(ev.pointerId)) return;
+      var prev = zPointers.get(ev.pointerId);
+      zMoved += Math.abs(ev.clientX - prev.x) + Math.abs(ev.clientY - prev.y);
+      zPointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (zPointers.size === 1) {
+        var dx = ev.clientX - prev.x, dy = ev.clientY - prev.y;
+        zX += dx; zY += dy; zClampPan(); zApply();
+      } else if (zPointers.size === 2 && zPinch) {
+        var pts = Array.from(zPointers.values());
+        var d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        var mx = (pts[0].x + pts[1].x) / 2, my = (pts[0].y + pts[1].y) / 2;
+        var r = zoomStage.getBoundingClientRect();
+        var cx = mx - (r.left + r.width / 2), cy = my - (r.top + r.height / 2);
+        var ns = zClamp(zPinch.s0 * (d / zPinch.d0), 1, 6);
+        zX = cx - (cx - zPinch.x0) * (ns / zPinch.s0);
+        zY = cy - (cy - zPinch.y0) * (ns / zPinch.s0);
+        zScale = ns; zClampPan(); zApply();
+      }
+    });
+    function zEnd(ev) {
+      zPointers.delete(ev.pointerId);
+      if (zPointers.size < 2) zPinch = null;
+      if (zPointers.size === 0 && zDownBackdrop && zMoved < 8) zClose();
+    }
+    zoomStage.addEventListener('pointerup', zEnd);
+    zoomStage.addEventListener('pointercancel', zEnd);
+    // Tap the main map (anywhere except a dot) to zoom it.
+    document.getElementById('mapWrap').addEventListener('click', function (ev) {
+      if (ev.target.closest && ev.target.closest('.map-dot')) return;
+      var svg = document.querySelector('#mapWrap svg');
+      if (svg) zOpen(svg.outerHTML, 'map');
+    });
+    // Tap any entry sketch to zoom it.
+    document.getElementById('entries').addEventListener('click', function (ev) {
+      var sk = ev.target.closest ? ev.target.closest('.sketch') : null;
+      if (!sk) return;
+      var svg = sk.querySelector('svg');
+      if (svg) zOpen(svg.outerHTML, 'sketch');
+    });
+  }
+
   // Bridge for the Android wrapper (Play Billing). The wrapper calls
   // window.GTA6Journal.setUnlocked('loot' | 'treasures' | 'cars') after purchase.
   window.GTA6Journal = {
@@ -207,4 +310,5 @@
   };
 
   render();
+  initZoom();
 })();
