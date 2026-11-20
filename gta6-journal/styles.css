@@ -26,8 +26,10 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-se
 .map-card { max-width: 860px; margin: 14px auto 0; padding: 0 16px; }
 .map-card h2 { margin: 0 0 4px; font-size: 1.05em; color: var(--teal); }
 .map-note { margin: 0 0 8px; color: var(--muted); font-size: .85em; }
-.map-wrap { background: #0a2036; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.map-wrap { background: #0a2036; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: zoom-in; }
 .map-wrap svg { display: block; width: 100%; height: auto; }
+.ign-link { margin: 8px 0 0; font-size: .88em; color: var(--muted); }
+.ign-link a { color: var(--teal); font-weight: 600; }
 .map-dot { cursor: pointer; }
 .map-dot.found { opacity: .45; }
 .map-dot circle { stroke: #0d0a14; stroke-width: 1.5; }
@@ -57,6 +59,16 @@ footer p { margin: 6px 0; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #2a1844; border: 1px solid var(--pink); color: var(--text); padding: 10px 16px; border-radius: 99px; font-size: .92em; z-index: 9; max-width: 92vw; text-align: center; }
 @media (max-width: 560px) { .brand h1 { font-size: 1.25em; } .tab { min-width: 44%; } }
 
-.sketch { margin: 10px 0 2px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0a2036; }
+.sketch { margin: 10px 0 2px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0a2036; cursor: zoom-in; }
 .sketch svg { display: block; width: 100%; height: auto; }
 .sketch-cap { margin: 0; padding: 4px 10px 6px; font-size: .72em; color: var(--muted); }
+
+.zoom-overlay { position: fixed; inset: 0; background: rgba(5, 3, 10, .97); z-index: 20; display: flex; flex-direction: column; }
+.zoom-bar { display: flex; gap: 8px; align-items: center; padding: 12px 14px; }
+.zoom-bar button { background: var(--bg2); color: var(--text); border: 1px solid var(--line); border-radius: 99px; padding: 8px 16px; font-size: 1em; cursor: pointer; }
+.zoom-bar #zoomClose { margin-left: auto; background: var(--pink); border-color: var(--pink); color: #fff; font-weight: 700; }
+.zoom-stage { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; position: relative; }
+.zoom-content { width: min(1000px, 96vw); flex: 0 0 auto; will-change: transform; }
+.zoom-content.sketch { width: min(560px, 96vw); }
+.zoom-content svg { display: block; width: 100%; height: auto; }
+.zoom-hint { text-align: center; color: var(--muted); font-size: .8em; margin: 0; padding: 10px 14px 16px; }
