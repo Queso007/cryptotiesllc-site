@@ -6,7 +6,7 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
-.app-header { background: linear-gradient(135deg, #1b0f2e, #2a0f3a 55%, #0d2b33); padding: 20px 16px 16px; border-bottom: 2px solid var(--pink); position: sticky; top: 0; z-index: 5; }
+.app-header { background: linear-gradient(135deg, #1b0f2e, #2a0f3a 55%, #0d2b33); padding: 14px 16px 12px; border-bottom: 2px solid var(--pink); position: sticky; top: 0; z-index: 5; }
 .brand { display: flex; gap: 12px; align-items: flex-start; max-width: 860px; margin: 0 auto; }
 .logo-mark { font-size: 2.2em; line-height: 1; }
 .brand h1 { margin: 0; font-size: 1.45em; letter-spacing: .02em; }
@@ -23,16 +23,22 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-se
 .tab .lock { color: var(--gold); }
 .toolbar { max-width: 860px; margin: 12px auto 0; padding: 0 16px; }
 .toolbar input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg2); color: var(--text); font-size: 1em; }
-.map-card { max-width: 860px; margin: 14px auto 0; padding: 0 16px; }
-.map-card h2 { margin: 0 0 4px; font-size: 1.05em; color: var(--teal); }
+.map-card { max-width: 1000px; margin: 0 auto; padding: 0 8px; }
+.map-card h2 { margin: 10px 0 4px; font-size: 1.05em; color: var(--teal); }
 .map-note { margin: 0 0 8px; color: var(--muted); font-size: .85em; }
+.map-legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 8px 0 0; font-size: .8em; color: var(--muted); }
+.map-legend .lg { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.map-legend .lg.exact { background: var(--teal); }
+.map-legend .lg.approx { background: transparent; border: 2px dashed var(--teal); }
+.map-legend .lg.area { background: rgba(255,46,136,.08); border: 1.5px dashed var(--pink); }
+.map-intro { max-width: 860px; margin: 12px auto 0; padding: 0 16px; color: var(--muted); font-size: .92em; }
 .map-wrap { background: #0a2036; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: zoom-in; }
 .map-wrap svg { display: block; width: 100%; height: auto; }
 .ign-link { margin: 8px 0 0; font-size: .88em; color: var(--muted); }
 .ign-link a { color: var(--teal); font-weight: 600; }
 .map-dot { cursor: pointer; }
 .map-dot.found { opacity: .45; }
-.map-dot circle { stroke: #0d0a14; stroke-width: 1.5; }
+.map-dot.exact circle { stroke: #0d0a14; stroke-width: 1.5; }
 .map-label { font-size: 11px; fill: #9fd8e8; font-family: inherit; }
 .entries { max-width: 860px; margin: 0 auto; padding: 14px 16px 24px; display: grid; gap: 12px; }
 .entry { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
@@ -42,6 +48,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-se
 .entry h3 { margin: 0; font-size: 1.05em; }
 .entry .area { color: var(--teal); font-size: .85em; margin: 2px 0 6px; }
 .entry p { margin: 6px 0; font-size: .93em; }
+.entry-note.warn { background: #4a3405; color: var(--amber); border-radius: 8px; padding: 6px 10px; font-size: .85em; margin: 6px 0; }
 .entry p b { color: var(--gold); font-weight: 600; }
 .badge { display: inline-block; font-size: .75em; padding: 2px 8px; border-radius: 99px; margin-top: 6px; }
 .badge.verified { background: #123f2a; color: var(--green); }
@@ -57,7 +64,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-se
 footer { max-width: 860px; margin: 0 auto; padding: 8px 16px 32px; color: var(--muted); font-size: .8em; }
 footer p { margin: 6px 0; }
 .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #2a1844; border: 1px solid var(--pink); color: var(--text); padding: 10px 16px; border-radius: 99px; font-size: .92em; z-index: 9; max-width: 92vw; text-align: center; }
-@media (max-width: 560px) { .brand h1 { font-size: 1.25em; } .tab { min-width: 44%; } }
+@media (max-width: 560px) { .brand h1 { font-size: 1.25em; } .tab { min-width: 44%; } .map-card { padding: 0; } .map-wrap { border-radius: 0; border-left: 0; border-right: 0; } .map-card h2, .map-note, .map-legend, .ign-link { padding-left: 16px; padding-right: 16px; } }
 
 .sketch { margin: 10px 0 2px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0a2036; cursor: zoom-in; }
 .sketch svg { display: block; width: 100%; height: auto; }
