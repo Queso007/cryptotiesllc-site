@@ -19,6 +19,8 @@
   }
   var active = 'places';
   var query = '';
+  var view = 'map'; // 'map' is the main screen; 'list' is the entry list
+  var sheetEntry = null; // entry id currently open in the detail sheet
 
   function saveFound() { localStorage.setItem(LS_FOUND, JSON.stringify(Array.from(found))); }
   function saveUnlocked() { localStorage.setItem(LS_UNLOCKED, JSON.stringify(Array.from(unlocked))); }
@@ -114,19 +116,26 @@
   }
 
   function renderMap() {
-    var list = ENTRIES.filter(function (e) { return e.section === active; });
+    // The map is the main screen: every entry in every section gets a pin,
+    // coloured by section, numbered within its section. 43 dots for 42
+    // entries (loot-15 has two locations). Pin positions are unchanged
+    // from v1.0.4/v1.0.5 — only the drawing around them changed.
     var dots = [];
-    list.forEach(function (e, i) {
-      var pins = IGN_PINS[e.id];
-      if (pins) {
-        pins.forEach(function (p) {
-          dots.push({ id: e.id, num: i + 1, x: p.x, y: p.y, kind: p.kind, section: e.section, name: e.name });
-        });
-      } else {
-        // No IGN match: dashed "general area" circle at the anchor position.
-        var p = dotPos(e, i);
-        dots.push({ id: e.id, num: i + 1, x: p.x, y: p.y, kind: 'area', section: e.section, name: e.name });
-      }
+    SECTIONS.forEach(function (s) {
+      var idx = 0;
+      ENTRIES.filter(function (e) { return e.section === s.id; }).forEach(function (e) {
+        idx++;
+        var pins = IGN_PINS[e.id];
+        if (pins) {
+          pins.forEach(function (p) {
+            dots.push({ id: e.id, num: idx, x: p.x, y: p.y, kind: p.kind, section: e.section, name: e.name });
+          });
+        } else {
+          // No IGN match: dashed "general area" circle at the anchor position.
+          var p = dotPos(e, idx - 1);
+          dots.push({ id: e.id, num: idx, x: p.x, y: p.y, kind: 'area', section: e.section, name: e.name });
+        }
+      });
     });
     var dotsSvg = dots.map(function (d) {
       var cls = 'map-dot ' + d.kind + (found.has(d.id) ? ' found' : '');
@@ -142,44 +151,52 @@
         body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="13" fill="' + color + '" fill-opacity="0.08" stroke="' + color + '" stroke-width="1.5" stroke-dasharray="2 4" opacity="0.85"/>' +
           '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '" opacity="0.85">' + d.num + '</text>';
       }
-      return '<g class="' + cls + '" data-entry="' + d.id + '">' + body +
+      return '<g class="' + cls + '" data-entry="' + d.id + '" data-section="' + d.section + '">' + body +
         '<title>' + esc(d.name) + '</title></g>';
     }).join('');
-    document.getElementById('mapWrap').innerHTML =
-      '<svg viewBox="0 0 1000 640" role="img" aria-label="Schematic map of Leonida">' +
+    document.getElementById('mapViewport').innerHTML =
+      '<svg viewBox="0 0 1000 640" role="img" aria-label="Map of Leonida with secret locations">' +
       '<rect width="1000" height="640" fill="#0a2036"/>' +
-      // mainland (stylised)
-      '<path d="M120,180 L180,110 L300,80 L470,70 L620,90 L760,110 L880,150 L920,230 L900,330 L860,430 L760,500 L600,520 L420,500 L260,470 L150,400 L110,300 Z" fill="#1d4a33" stroke="#2ee6c8" stroke-opacity=".35"/>' +
-      // keys chain + islands
+      // ---- v1.0.6: mainland redrawn to follow the real Leonida geography
+      // more closely — our own simplified drawing, less detail than the
+      // real map. Same 1000x640 viewBox and same landmass bounds, so no
+      // pin moved: north coast up past Port Gellhorn, Vice Beach curve on
+      // the east, Grassrivers bulge on the west, Hamlet south coast.
+      '<path d="M178,128 L205,92 L255,58 L300,48 L350,55 L410,52 L470,58 L540,68 L585,72 L660,82 L730,100 L800,118 L860,140 L895,175 L918,235 L910,300 L895,360 L872,415 L845,455 L800,480 L730,498 L660,508 L580,512 L500,505 L420,498 L350,505 L290,488 L240,470 L205,445 L175,415 L158,375 L150,330 L158,285 L150,240 L165,195 Z" fill="#1d4a33" stroke="#2ee6c8" stroke-opacity=".35"/>' +
+      // Keys chain + islands
       '<ellipse cx="300" cy="570" rx="60" ry="14" fill="#3a5a3a"/><ellipse cx="420" cy="585" rx="70" ry="14" fill="#3a5a3a"/><ellipse cx="540" cy="575" rx="55" ry="12" fill="#3a5a3a"/>' +
       '<ellipse cx="170" cy="560" rx="34" ry="20" fill="#3a5a3a"/><ellipse cx="340" cy="610" rx="30" ry="14" fill="#3a5a3a"/>' +
       '<ellipse cx="880" cy="170" rx="26" ry="34" fill="#3a5a3a"/><ellipse cx="880" cy="270" rx="20" ry="26" fill="#3a5a3a"/><ellipse cx="800" cy="470" rx="24" ry="16" fill="#3a5a3a"/>' +
-      // Featherstone Islands (far north; added v1.0.4 for the Meerwunder pin)
-      '<ellipse cx="370" cy="34" rx="50" ry="15" fill="#3a5a3a"/>' +
-      // ---- v1.0.5: streets & roads (own drawing, secrets only) ----
-      // Water: Cottonmouth Lake in the Grassrivers.
+      // Featherstone Islands (far north; the Meerwunder pin sits on this)
+      '<ellipse cx="345" cy="30" rx="48" ry="13" fill="#3a5a3a"/>' +
+      // Small key for the Key Lento stash pin (532,553)
+      '<ellipse cx="532" cy="560" rx="28" ry="14" fill="#3a5a3a"/>' +
+      // Water: Cottonmouth Lake in the Grassrivers, plus two swamp channels.
       '<ellipse cx="210" cy="335" rx="30" ry="16" fill="#0a2036" opacity="0.85"/>' +
+      '<g fill="none" stroke="#0a2036" stroke-width="5" stroke-linecap="round" opacity="0.75">' +
+      '<path d="M168,300 C195,322 215,342 228,368"/>' +
+      '<path d="M188,418 C212,432 236,444 258,454"/>' +
+      '</g>' +
       // Beach band along the east coast (Vice Beach).
-      '<path d="M888,165 L912,235 L892,335 L858,425" fill="none" stroke="#e8d9a0" stroke-width="7" stroke-linecap="round" opacity="0.28"/>' +
+      '<path d="M890,170 L910,235 L902,330 L878,415" fill="none" stroke="#e8d9a0" stroke-width="7" stroke-linecap="round" opacity="0.28"/>' +
       // Highways & main roads.
       '<g fill="none" stroke="#d8c690" stroke-linecap="round" opacity="0.55">' +
-      '<path d="M250,140 L380,108 L480,96 L620,90" stroke-width="3.5"/>' +       // north road: Port Gellhorn -> Mt. Kalaga -> Vice City
+      '<path d="M250,140 L290,80 L400,64 L540,72 L650,88 L730,104" stroke-width="3.5"/>' +  // north road: Port Gellhorn -> Mt. Kalaga -> Vice City
       '<path d="M250,140 L222,250 L200,340" stroke-width="3"/>' +              // Port Gellhorn -> Grassrivers
-      '<path d="M150,320 L230,355 L320,385" stroke-width="3"/>' +              // Grassrivers west road
+      '<path d="M155,320 L230,355 L320,385" stroke-width="3"/>' +              // Grassrivers west road
       '<path d="M210,350 L270,425 L350,465" stroke-width="3"/>' +              // swamp road to Hamlet
-      '<path d="M170,455 L420,488 L600,498 L790,465" stroke-width="4"/>' +      // Hamlet highway (south)
+      '<path d="M180,450 L350,490 L580,500 L790,470" stroke-width="4"/>' +      // Hamlet highway (south)
       '<path d="M690,310 L650,410 L605,490" stroke-width="3"/>' +              // Vice City -> Hamlet connector
-      '<path d="M872,160 L898,235 L884,330 L852,420" stroke-width="4"/>' +      // east coastal highway (Vice Beach)
+      '<path d="M888,168 L908,235 L900,330 L878,415" stroke-width="4"/>' +      // east coastal highway (Vice Beach)
       '</g>' +
       // Vice City street-grid suggestion.
       '<g fill="none" stroke="#9fd8e8" stroke-width="1" opacity="0.16">' +
       '<path d="M620,212 L620,368"/><path d="M652,212 L652,368"/><path d="M684,212 L684,368"/><path d="M716,212 L716,368"/><path d="M748,212 L748,368"/><path d="M780,212 L780,368"/>' +
       '<path d="M612,222 L788,222"/><path d="M612,254 L788,254"/><path d="M612,286 L788,286"/><path d="M612,318 L788,318"/><path d="M612,350 L788,350"/>' +
       '</g>' +
-      // Bridges to the Keys and islands.
+      // Bridges to the Keys.
       '<g fill="none" stroke="#d8c690" stroke-width="3" stroke-linecap="round" opacity="0.6">' +
-      '<path d="M300,505 L300,558"/><path d="M420,500 L420,570"/><path d="M540,505 L540,560"/>' +
-      '<path d="M800,442 L800,458"/><path d="M908,248 L890,256"/>' +
+      '<path d="M300,490 L300,558"/><path d="M420,498 L420,570"/><path d="M540,508 L540,562"/>' +
       '</g>' +
       '<text class="map-label" x="425" y="38">FEATHERSTONE</text>' +
       '<text class="map-label" x="640" y="270">VICE CITY</text>' +
@@ -190,16 +207,31 @@
       '<text class="map-label" x="210" y="130">PORT GELLHORN</text>' +
       '<text class="map-label" x="560" y="500">HAMLET</text>' +
       dotsSvg + '</svg>';
-    document.querySelectorAll('.map-dot').forEach(function (g) {
-      g.addEventListener('click', function () {
-        var card = document.getElementById('entry-' + g.dataset.entry);
-        if (card) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          card.style.outline = '2px solid ' + DOT_COLORS[active];
-          setTimeout(function () { card.style.outline = ''; }, 1600);
-        }
-      });
-    });
+    mReset();
+    // Taps open the detail sheet via the pointerup handler in initMapZoom
+    // (not a click handler): the map uses setPointerCapture, which retargets
+    // the click to the map wrapper, so a dot 'click' listener would never fire.
+  }
+
+  // One entry card, used by the list view and by the pin detail sheet.
+  function entryCardHtml(e, i, idAttr) {
+    var isFound = found.has(e.id);
+    var badge = e.verified
+      ? '<span class="badge verified">✓ Verified — 2+ guides agree</span>'
+      : '<span class="badge single">⚠ Single source — unconfirmed</span>';
+    var sketch = (window.GTA6_SKETCHES || {})[e.id] || '';
+    var photo = '<div class="spot-photo"><img src="spot-photos/' + e.id + '.jpg" alt="Photo-style image: ' + esc(e.name) + '" loading="lazy" onerror="this.parentElement.style.display=\'none\'">' +
+      '<p class="spot-photo-cap">Photo-style image — original art, not an in-game screenshot · tap to zoom</p></div>';
+    return '<article class="entry' + (isFound ? ' found' : '') + '" id="' + idAttr + '">' +
+      '<div class="entry-top"><input type="checkbox" class="entry-check" data-id="' + e.id + '"' + (isFound ? ' checked' : '') + ' aria-label="Mark found">' +
+      '<div><h3>' + (i + 1) + '. ' + esc(e.name) + '</h3>' +
+      '<div class="area">' + esc(e.area) + '</div>' +
+      (e.note ? '<p class="entry-note warn">⚠ ' + esc(e.note) + '</p>' : '') +
+      photo +
+      (sketch ? '<div class="sketch">' + sketch +
+        '<p class="sketch-cap">Sketch — schematic, not to scale · tap to zoom</p></div>' : '') +
+      '<p><b>Where:</b> ' + esc(e.location) + '</p>' +
+      '<p><b>How to get it:</b> ' + esc(e.how) + '</p>' + badge + '</div></div></article>';
   }
 
   function renderEntries() {
@@ -229,33 +261,8 @@
     var total = ENTRIES.filter(function (e) { return e.section === active; }).length;
     var html = '<p class="section-progress">' + sec.icon + ' ' + esc(sec.title) + ' — ' + done + ' / ' + total + ' found</p>';
     if (!list.length) html += '<p class="empty">No secrets match that search in this section.</p>';
-    html += list.map(function (e, i) {
-      var isFound = found.has(e.id);
-      var badge = e.verified
-        ? '<span class="badge verified">✓ Verified — 2+ guides agree</span>'
-        : '<span class="badge single">⚠ Single source — unconfirmed</span>';
-      var sketch = (window.GTA6_SKETCHES || {})[e.id] || '';
-      var photo = '<div class="spot-photo"><img src="spot-photos/' + e.id + '.jpg" alt="Photo-style image: ' + esc(e.name) + '" loading="lazy" onerror="this.parentElement.style.display=\'none\'">' +
-        '<p class="spot-photo-cap">Photo-style image — original art, not an in-game screenshot · tap to zoom</p></div>';
-      return '<article class="entry' + (isFound ? ' found' : '') + '" id="entry-' + e.id + '">' +
-        '<div class="entry-top"><input type="checkbox" class="entry-check" data-id="' + e.id + '"' + (isFound ? ' checked' : '') + ' aria-label="Mark found">' +
-        '<div><h3>' + (i + 1) + '. ' + esc(e.name) + '</h3>' +
-        '<div class="area">' + esc(e.area) + '</div>' +
-        (e.note ? '<p class="entry-note warn">⚠ ' + esc(e.note) + '</p>' : '') +
-        photo +
-        (sketch ? '<div class="sketch">' + sketch +
-          '<p class="sketch-cap">Sketch — schematic, not to scale · tap to zoom</p></div>' : '') +
-        '<p><b>Where:</b> ' + esc(e.location) + '</p>' +
-        '<p><b>How to get it:</b> ' + esc(e.how) + '</p>' + badge + '</div></div></article>';
-    }).join('');
+    html += list.map(function (e, i) { return entryCardHtml(e, i, 'entry-' + e.id); }).join('');
     wrap.innerHTML = html;
-    wrap.querySelectorAll('.entry-check').forEach(function (cb) {
-      cb.addEventListener('change', function () {
-        if (cb.checked) found.add(cb.dataset.id); else found.delete(cb.dataset.id);
-        saveFound();
-        render();
-      });
-    });
   }
 
   function renderProgress() {
@@ -266,7 +273,66 @@
     document.getElementById('overallFill').style.width = pct + '%';
   }
 
-  function render() { renderTabs(); renderMap(); renderEntries(); renderProgress(); }
+  function render() {
+    renderTabs(); renderMap(); renderEntries(); renderProgress();
+    // A purchase can happen while the detail sheet is open (unlock from the
+    // sheet) — refresh its content so the locked entry opens unlocked.
+    if (sheetEntry && !document.getElementById('detailSheet').hidden) openDetail(sheetEntry);
+  }
+
+  // ---- pin detail sheet (bottom sheet; opens when a map dot is tapped) ----
+  function openDetail(id) {
+    var e = ENTRIES.find(function (x) { return x.id === id; });
+    if (!e) return;
+    sheetEntry = id;
+    var body = document.getElementById('sheetBody');
+    if (!isUnlocked(e.section)) {
+      var sec = SECTIONS.find(function (s) { return s.id === e.section; });
+      var n = ENTRIES.filter(function (x) { return x.section === e.section; }).length;
+      body.innerHTML = '<div class="sheet-lock"><div class="lock-icon" aria-hidden="true">🔒</div>' +
+        '<h2>' + esc(sec.title) + ' — $' + sec.price.toFixed(2) + '</h2>' +
+        '<p><b>' + esc(e.name) + '</b> is in the locked ' + esc(sec.title) + ' section.</p>' +
+        '<p>Unlock all ' + n + ' ' + esc(sec.title.toLowerCase()) + ' entries with locations and how to get each one. One-time purchase, yours forever.</p>' +
+        '<button class="unlock-btn" data-section="' + sec.id + '">Unlock for $' + sec.price.toFixed(2) + '</button>' +
+        '<p class="lock-fine">Unlocks are purchased in the Play Store app. Web preview: add ?unlock=all to the URL to preview unlocked sections.</p></div>';
+    } else {
+      var idx = ENTRIES.filter(function (x) { return x.section === e.section; })
+        .findIndex(function (x) { return x.id === id; });
+      body.innerHTML = entryCardHtml(e, idx, 'sheet-entry-' + e.id);
+    }
+    document.getElementById('sheetBackdrop').hidden = false;
+    document.getElementById('detailSheet').hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDetail() {
+    sheetEntry = null;
+    document.getElementById('sheetBackdrop').hidden = true;
+    document.getElementById('detailSheet').hidden = true;
+    if (document.getElementById('zoomOverlay').hidden) document.body.style.overflow = '';
+  }
+
+  // ---- map / list view toggle (map is the main screen) ----
+  function setView(v) {
+    view = v;
+    var mapCard = document.getElementById('mapCard');
+    var listView = document.getElementById('listView');
+    var btn = document.getElementById('viewToggle');
+    if (v === 'map') {
+      mapCard.hidden = false; listView.hidden = true;
+      btn.textContent = '☰ List view';
+      renderMap();
+    } else {
+      mapCard.hidden = true; listView.hidden = false;
+      btn.textContent = '🗺️ Map view';
+      renderEntries();
+    }
+    window.scrollTo(0, 0);
+  }
+
+  // One purchase path for the lock panel and the detail sheet.
+  function unlockSection(sectionId) {
+    toast('Unlocks are purchased in the Play Store app ($2.00 per section). Web preview: add ?unlock=all to the URL.');
+  }
 
   function toast(msg) {
     var t = document.createElement('div');
@@ -281,8 +347,137 @@
     renderEntries();
   });
   document.getElementById('unlockBtn').addEventListener('click', function () {
-    toast('Unlocks are purchased in the Play Store app ($2.00 per section). Web preview: add ?unlock=all to the URL.');
+    unlockSection(active);
   });
+  document.getElementById('viewToggle').addEventListener('click', function () {
+    setView(view === 'map' ? 'list' : 'map');
+  });
+  document.getElementById('sheetClose').addEventListener('click', closeDetail);
+  document.getElementById('sheetBackdrop').addEventListener('click', closeDetail);
+  document.getElementById('sheetBody').addEventListener('click', function (ev) {
+    var b = ev.target.closest ? ev.target.closest('.unlock-btn') : null;
+    if (b) unlockSection(b.dataset.section);
+  });
+
+  // One checkbox handler for the list view and the detail sheet. Updates
+  // state in place — no full re-render, so the map keeps its zoom/pan.
+  document.addEventListener('change', function (ev) {
+    var cb = ev.target.closest ? ev.target.closest('.entry-check') : null;
+    if (!cb) return;
+    var id = cb.dataset.id;
+    if (cb.checked) found.add(id); else found.delete(id);
+    saveFound();
+    renderProgress();
+    renderTabs();
+    document.querySelectorAll('.map-dot[data-entry="' + id + '"]').forEach(function (g) {
+      g.classList.toggle('found', cb.checked);
+    });
+    var card = cb.closest('.entry');
+    if (card) card.classList.toggle('found', cb.checked);
+    var listCard = document.getElementById('entry-' + id);
+    if (listCard && listCard !== card) listCard.classList.toggle('found', cb.checked);
+  });
+
+  // ---- direct zoom & pan on the main-screen map (like the IGN map) ----
+  // Pinch to zoom, scroll-wheel zoom, +/− buttons, drag to pan — all on the
+  // map itself, 1–6x, pan clamped so the map can't leave the viewport.
+  // A tap on a dot opens its detail card via pointerup (not a click
+  // listener): setPointerCapture retargets the click to the map wrapper,
+  // so a dot 'click' handler would never fire. A drag or pinch that
+  // starts on a dot (moved > 8px, or a second finger) does not open it.
+  var mScale = 1, mX = 0, mY = 0;
+  var mPointers = new Map();
+  var mPinch = null;
+  var mMoved = 0;
+  var mDownDot = null; // entry id if this gesture started on a dot
+  var mMaxPointers = 0;
+
+  function mApply() {
+    var vp = document.getElementById('mapViewport');
+    if (vp) vp.style.transform = 'translate(' + mX + 'px,' + mY + 'px) scale(' + mScale + ')';
+  }
+  function mClampPan() {
+    var wrap = document.getElementById('mapWrap');
+    var w = wrap.clientWidth, h = wrap.clientHeight;
+    var mx = Math.max(0, (w * mScale - w) / 2), my = Math.max(0, (h * mScale - h) / 2);
+    mX = Math.max(-mx, Math.min(mx, mX));
+    mY = Math.max(-my, Math.min(my, mY));
+  }
+  function mZoomAt(cx, cy, factor) {
+    var ns = Math.max(1, Math.min(6, mScale * factor));
+    mX = cx - (cx - mX) * (ns / mScale);
+    mY = cy - (cy - mY) * (ns / mScale);
+    mScale = ns; mClampPan(); mApply();
+  }
+  function mReset() { mScale = 1; mX = 0; mY = 0; mApply(); }
+  function mCenter(ev) {
+    var r = document.getElementById('mapWrap').getBoundingClientRect();
+    return { x: ev.clientX - (r.left + r.width / 2), y: ev.clientY - (r.top + r.height / 2) };
+  }
+  function initMapZoom() {
+    var wrap = document.getElementById('mapWrap');
+    document.getElementById('mapZoomIn').addEventListener('click', function () { mZoomAt(0, 0, 1.5); });
+    document.getElementById('mapZoomOut').addEventListener('click', function () { mZoomAt(0, 0, 1 / 1.5); });
+    document.getElementById('mapZoomReset').addEventListener('click', mReset);
+    document.getElementById('mapZoomFull').addEventListener('click', function () {
+      var svg = document.querySelector('#mapViewport svg');
+      if (svg) zOpen(svg.outerHTML, 'map');
+    });
+    wrap.addEventListener('wheel', function (ev) {
+      ev.preventDefault();
+      var c = mCenter(ev);
+      mZoomAt(c.x, c.y, ev.deltaY < 0 ? 1.15 : 1 / 1.15);
+    }, { passive: false });
+    wrap.addEventListener('pointerdown', function (ev) {
+      if (ev.target.closest && ev.target.closest('.map-controls')) return;
+      if (mPointers.size === 0) {
+        mMoved = 0;
+        mMaxPointers = 0;
+        var dot = ev.target.closest ? ev.target.closest('.map-dot') : null;
+        mDownDot = dot ? dot.dataset.entry : null;
+      }
+      try { wrap.setPointerCapture(ev.pointerId); } catch (e) { /* synthetic events */ }
+      mPointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      mMaxPointers = Math.max(mMaxPointers, mPointers.size);
+      if (mPointers.size === 2) {
+        var pts = Array.from(mPointers.values());
+        mPinch = { d0: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y), s0: mScale, x0: mX, y0: mY };
+      }
+    });
+    wrap.addEventListener('pointermove', function (ev) {
+      if (!mPointers.has(ev.pointerId)) return;
+      var prev = mPointers.get(ev.pointerId);
+      mMoved += Math.abs(ev.clientX - prev.x) + Math.abs(ev.clientY - prev.y);
+      mPointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (mPointers.size === 1) {
+        mX += ev.clientX - prev.x; mY += ev.clientY - prev.y;
+        mClampPan(); mApply();
+      } else if (mPointers.size === 2 && mPinch) {
+        var pts = Array.from(mPointers.values());
+        var d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        var mx = (pts[0].x + pts[1].x) / 2, my = (pts[0].y + pts[1].y) / 2;
+        var r = wrap.getBoundingClientRect();
+        var cx = mx - (r.left + r.width / 2), cy = my - (r.top + r.height / 2);
+        var ns = Math.max(1, Math.min(6, mPinch.s0 * (d / mPinch.d0)));
+        mX = cx - (cx - mPinch.x0) * (ns / mPinch.s0);
+        mY = cy - (cy - mPinch.y0) * (ns / mPinch.s0);
+        mScale = ns; mClampPan(); mApply();
+      }
+    });
+    function mEnd(ev) {
+      mPointers.delete(ev.pointerId);
+      if (mPointers.size < 2) mPinch = null;
+      if (mPointers.size === 0) {
+        // A clean single-pointer tap that started on a dot opens its detail.
+        // A drag or pinch (moved > 8px, or a second finger joined) does not.
+        if (mMaxPointers === 1 && mDownDot && mMoved <= 8) openDetail(mDownDot);
+        mDownDot = null;
+        mMaxPointers = 0;
+      }
+    }
+    wrap.addEventListener('pointerup', mEnd);
+    wrap.addEventListener('pointercancel', mEnd);
+  }
 
   // ---- full-screen zoom viewer for the main map and per-entry sketches ----
   var zoomOverlay = document.getElementById('zoomOverlay');
@@ -318,7 +513,7 @@
   function zClose() {
     zoomOverlay.hidden = true;
     zoomStage.innerHTML = ''; zoomContent = null;
-    document.body.style.overflow = '';
+    if (document.getElementById('detailSheet').hidden) document.body.style.overflow = '';
   }
   function zStageCenter(ev) {
     var r = zoomStage.getBoundingClientRect();
@@ -329,7 +524,11 @@
     document.getElementById('zoomIn').addEventListener('click', function () { zZoomAt(0, 0, 1.5); });
     document.getElementById('zoomOut').addEventListener('click', function () { zZoomAt(0, 0, 1 / 1.5); });
     document.getElementById('zoomReset').addEventListener('click', zReset);
-    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && !zoomOverlay.hidden) zClose(); });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Escape') return;
+      if (!document.getElementById('detailSheet').hidden) { closeDetail(); return; }
+      if (!zoomOverlay.hidden) zClose();
+    });
     zoomStage.addEventListener('wheel', function (ev) {
       ev.preventDefault();
       var c = zStageCenter(ev);
@@ -372,14 +571,8 @@
     }
     zoomStage.addEventListener('pointerup', zEnd);
     zoomStage.addEventListener('pointercancel', zEnd);
-    // Tap the main map (anywhere except a dot) to zoom it.
-    document.getElementById('mapWrap').addEventListener('click', function (ev) {
-      if (ev.target.closest && ev.target.closest('.map-dot')) return;
-      var svg = document.querySelector('#mapWrap svg');
-      if (svg) zOpen(svg.outerHTML, 'map');
-    });
-    // Tap any entry sketch or spot photo to zoom it.
-    document.getElementById('entries').addEventListener('click', function (ev) {
+    // Tap any entry sketch or spot photo to zoom it (list view or sheet).
+    function zoomTargetClick(ev) {
       var sk = ev.target.closest ? ev.target.closest('.sketch') : null;
       if (sk) {
         var svg = sk.querySelector('svg');
@@ -391,7 +584,9 @@
         var img = ph.querySelector('img');
         if (img) zOpen('<img src="' + img.getAttribute('src') + '" alt="">', 'photo');
       }
-    });
+    }
+    document.getElementById('entries').addEventListener('click', zoomTargetClick);
+    document.getElementById('sheetBody').addEventListener('click', zoomTargetClick);
   }
 
   // Bridge for the Android wrapper (Play Billing). The wrapper calls
@@ -407,5 +602,6 @@
   };
 
   render();
+  initMapZoom();
   initZoom();
 })();
