@@ -1,4 +1,4 @@
-// GTA 6 Secrets Journal — pin positions on the GTADB community map (v1.0.8).
+// GTA 6 Secrets Journal — pin positions on the GTADB community map (v1.1.0).
 // Game coordinates (metres) from research/gtadb-pins.json.
 // Calibration: reference-map lat/lng -> GTADB game coords, x = 23670.4*lng + 12869.8,
 // y = 23953.4*lat - 15887.7 (weighted least squares, 6 anchors; strong-anchor
@@ -52,4 +52,11 @@ window.GTA6_PINS = [
   { id: 'cars-40', section: 'cars', name: "'95 Grotti Cheetah (Ultimate Edition)", x: 85.4, y: -1197.7, kind: 'exact' },
   { id: 'cars-41', section: 'cars', name: "'67 Vapid Dominator Buggy (Ultimate Edition)", x: -5122, y: -3360, kind: 'area' },
   { id: 'cars-42', section: 'cars', name: "'55 Vapid Stanier (pre-order bonus)", x: 1900, y: 1400, kind: 'area' },
+  { id: 'cars-43', section: 'cars', name: "'82 Canis Crawler", x: -6355.3, y: 4755.3, kind: 'exact' },
+  { id: 'cars-44', section: 'cars', name: "Declasse Yosemite 1500", x: -6878.4, y: 4003.2, kind: 'exact' },
+  { id: 'cars-45', section: 'cars', name: "BF '77 Bandito", x: -3484.1, y: 1969.6, kind: 'approx' },
+  { id: 'cars-46', section: 'cars', name: "Annis '95 Hellion", x: -6516.3, y: 3064.2, kind: 'exact' },
+  { id: 'cars-47', section: 'cars', name: "Western Nightblade", x: -2991.7, y: 4204.4, kind: 'exact' },
+  { id: 'cars-48', section: 'cars', name: "Karin '85 Futo", x: -7702.1, y: 4942.2, kind: 'exact' },
+  { id: 'cars-49', section: 'cars', name: "Declasse '74 Vamos", x: -5065.3, y: 7395.0, kind: 'exact' },
 ];

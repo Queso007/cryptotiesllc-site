@@ -404,6 +404,69 @@ window.GTA6_DATA = {
    "location": "Parked at Ocean Beach in Chapter 3, with the Shore Court Garage. Pre-order bonus (any edition bought before November 20, 2026).",
    "how": "Pre-order any edition before Nov 20, 2026; collect the car at Ocean Beach in Chapter 3.",
    "verified": true
+  },
+  {
+   "id": "cars-43",
+   "section": "cars",
+   "name": "'82 Canis Crawler",
+   "area": "Port Gellhorn",
+   "location": "Moses drop-off: steal it from the Trader's Union compound on Gellhorn Ave, Port Gellhorn, by the Train Bridge, then deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "how": "Slim-jim it, outrun the gang, then deliver it to Moses at Watkins Auto Parts, Port Gellhorn. Moses drop-offs unlock in Chapter 2 in Port Gellhorn; completing all 7 earns the Emperor Sultan free.",
+   "verified": true
+  },
+  {
+   "id": "cars-44",
+   "section": "cars",
+   "name": "Declasse Yosemite 1500",
+   "area": "Port Gellhorn",
+   "location": "Moses drop-off: hooked to a tow truck in a driveway on Bastion St, Port Gellhorn. Deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "how": "Scan the tow truck with WAiNK, get the driver to flee, release the car and deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "verified": true
+  },
+  {
+   "id": "cars-45",
+   "section": "cars",
+   "name": "BF '77 Bandito",
+   "area": "NE Buckskin Swamp, Kelly County (Emerald Springs area)",
+   "location": "Moses drop-off — moving target, no fixed spawn: chase it on the dirt trail in NE Buckskin Swamp, Kelly County. The map pin marks the Emerald Springs area as an approximate search area only (nearest landmark 555m away); the car is being driven around. Deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "how": "Get the driver out and steal it, then deliver it to Moses at Watkins Auto Parts, Port Gellhorn. It is a moving chase target, not a parked spawn — check the dirt trails in NE Buckskin Swamp.",
+   "verified": true
+  },
+  {
+   "id": "cars-46",
+   "section": "cars",
+   "name": "Annis '95 Hellion",
+   "area": "Port Gellhorn",
+   "location": "Moses drop-off: in a bungalow driveway on Orchard Ave, Port Gellhorn, south of Moses's shop. Deliver it to Moses at Watkins Auto Parts.",
+   "how": "Distract the guard dog with a football, hotwire it, then deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "verified": true
+  },
+  {
+   "id": "cars-47",
+   "section": "cars",
+   "name": "Western Nightblade",
+   "area": "Ambrosia",
+   "location": "Moses drop-off: inside the Final Chapter motorcycle club compound on Birch St, Ambrosia, by the Water Tower. Deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "how": "Get inside via the roof/ladder, hotwire the bike, escape and deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "verified": true
+  },
+  {
+   "id": "cars-48",
+   "section": "cars",
+   "name": "Karin '85 Futo",
+   "area": "Port Gellhorn",
+   "location": "Moses drop-off: in the postal building garage at the southern tip of the Draper Island docks, Port Gellhorn, by the Dry Dock. Deliver it to Moses at Watkins Auto Parts.",
+   "how": "Get in via the fence or the NW door by the train tracks, steal it and deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "verified": true
+  },
+  {
+   "id": "cars-49",
+   "section": "cars",
+   "name": "Declasse '74 Vamos",
+   "area": "Lummox County",
+   "location": "Moses drop-off: in the locked garage of a rural house on Rockledge Rd, NE of Grayson, Lummox County. Keypad code 2727. Deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "how": "Enter keypad code 2727 to open the garage, steal the car and deliver it to Moses at Watkins Auto Parts, Port Gellhorn.",
+   "verified": true
   }
  ],
  "note": "Game launched Nov 19, 2026. Entries compiled from published guides; 'verified' means 2+ guides agree. Locations are landmark-based — no official map coordinates exist yet."
