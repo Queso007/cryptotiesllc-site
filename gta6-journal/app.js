@@ -148,10 +148,13 @@
       var badge = e.verified
         ? '<span class="badge verified">✓ Verified — 2+ guides agree</span>'
         : '<span class="badge single">⚠ Single source — unconfirmed</span>';
+      var sketch = (window.GTA6_SKETCHES || {})[e.id] || '';
       return '<article class="entry' + (isFound ? ' found' : '') + '" id="entry-' + e.id + '">' +
         '<div class="entry-top"><input type="checkbox" class="entry-check" data-id="' + e.id + '"' + (isFound ? ' checked' : '') + ' aria-label="Mark found">' +
         '<div><h3>' + (i + 1) + '. ' + esc(e.name) + '</h3>' +
         '<div class="area">' + esc(e.area) + '</div>' +
+        (sketch ? '<div class="sketch">' + sketch +
+          '<p class="sketch-cap">Sketch — schematic, not to scale</p></div>' : '') +
         '<p><b>Where:</b> ' + esc(e.location) + '</p>' +
         '<p><b>How to get it:</b> ' + esc(e.how) + '</p>' + badge + '</div></div></article>';
     }).join('');
