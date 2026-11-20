@@ -70,6 +70,10 @@ footer p { margin: 6px 0; }
 .sketch svg { display: block; width: 100%; height: auto; }
 .sketch-cap { margin: 0; padding: 4px 10px 6px; font-size: .72em; color: var(--muted); }
 
+.spot-photo { margin: 10px 0 2px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #0a2036; cursor: zoom-in; }
+.spot-photo img { display: block; width: 100%; height: auto; }
+.spot-photo-cap { margin: 0; padding: 4px 10px 6px; font-size: .72em; color: var(--muted); }
+
 .zoom-overlay { position: fixed; inset: 0; background: rgba(5, 3, 10, .97); z-index: 20; display: flex; flex-direction: column; }
 .zoom-bar { display: flex; gap: 8px; align-items: center; padding: 12px 14px; }
 .zoom-bar button { background: var(--bg2); color: var(--text); border: 1px solid var(--line); border-radius: 99px; padding: 8px 16px; font-size: 1em; cursor: pointer; }
@@ -77,5 +81,7 @@ footer p { margin: 6px 0; }
 .zoom-stage { flex: 1; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; position: relative; }
 .zoom-content { width: min(1000px, 96vw); flex: 0 0 auto; will-change: transform; }
 .zoom-content.sketch { width: min(560px, 96vw); }
+.zoom-content.photo { width: min(720px, 96vw); }
+.zoom-content.photo img { display: block; width: 100%; height: auto; border-radius: 10px; }
 .zoom-content svg { display: block; width: 100%; height: auto; }
 .zoom-hint { text-align: center; color: var(--muted); font-size: .8em; margin: 0; padding: 10px 14px 16px; }
