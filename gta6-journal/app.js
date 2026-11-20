@@ -55,12 +55,14 @@
   }
 
   // ---- the real community map (Leaflet + self-hosted GTADB tiles) ----
-  // The map is the main screen: every entry in every section gets a pin,
-  // coloured by section, numbered within its section. 43 dots for 42
-  // entries (loot-15 has two locations). Leaflet is created once; later
-  // renders only refresh the found-state classes on the markers.
+  // The map is the main screen. Only sections the user can open get pins:
+  // Secret Places (free) always, and a paid section's pins appear only
+  // once that section is unlocked. Locked pins are never added to the map
+  // at all — no dot, no ring, no unlock prompt from the map. 43 dots for
+  // 42 entries when everything is unlocked (loot-15 has two locations).
   var leafletMap = null;
   var leafletMarkers = {}; // entry id -> [marker, ...]
+  var leafletPinKeys = {}; // pin id (GTA6_PINS id) -> marker
 
   function pinLatLng(p) {
     // CRS.Simple: pixel y grows downward, so a world pixel (px, py) is
@@ -99,27 +101,39 @@
       tileSize: 512, minZoom: 0, maxZoom: 4, bounds: bounds, noWrap: true
     }).addTo(leafletMap);
     leafletMap.fitBounds(bounds);
+    syncMapMarkers();
+  }
+  // Add pins for sections the user can open; remove pins for locked ones.
+  // Called on every render, so a purchase (setUnlocked) or a revocation
+  // (setLocked) updates the map live, without a reload.
+  function syncMapMarkers() {
+    if (!leafletMap) return;
     window.GTA6_PINS.forEach(function (p) {
       var e = ENTRIES.find(function (x) { return x.id === p.id; }) ||
               ENTRIES.find(function (x) { return x.id === (p.parent || ''); });
       if (!e) return;
-      // number = index of the entry within its section (loot-15's two pins share it)
-      var idx = ENTRIES.filter(function (x) { return x.section === e.section; })
-        .findIndex(function (x) { return x.id === e.id; }) + 1;
-      var d = { id: e.id, num: idx, section: e.section, name: e.name, kind: p.kind };
-      var marker = L.marker(pinLatLng(p), { icon: pinIcon(d), title: e.name });
-      marker.on('click', function () { openDetail(e.id); });
-      marker.addTo(leafletMap);
-      (leafletMarkers[e.id] = leafletMarkers[e.id] || []).push(marker);
+      var marker = leafletPinKeys[p.id];
+      if (isUnlocked(e.section)) {
+        if (!marker) {
+          // number = index of the entry within its section (loot-15's two pins share it)
+          var idx = ENTRIES.filter(function (x) { return x.section === e.section; })
+            .findIndex(function (x) { return x.id === e.id; }) + 1;
+          var d = { id: e.id, num: idx, section: e.section, name: e.name, kind: p.kind };
+          marker = L.marker(pinLatLng(p), { icon: pinIcon(d), title: e.name });
+          marker.on('click', function () { openDetail(e.id); });
+          marker.addTo(leafletMap);
+          leafletPinKeys[p.id] = marker;
+          (leafletMarkers[e.id] = leafletMarkers[e.id] || []).push(marker);
+        }
+      } else if (marker) {
+        // Section locked (or revoked): remove the pin from the map entirely.
+        leafletMap.removeLayer(marker);
+        delete leafletPinKeys[p.id];
+        var arr = leafletMarkers[e.id] || [];
+        var i = arr.indexOf(marker);
+        if (i !== -1) arr.splice(i, 1);
+      }
     });
-  }
-  function renderMap() {
-    if (!window.L || !window.GTA6_PINS) {
-      document.getElementById('mapViewport').innerHTML =
-        '<p class="map-error">Map failed to load. Check your connection and reopen the app.</p>';
-      return;
-    }
-    if (!leafletMap) { initLeaflet(); return; }
     // Refresh found-state classes (a check or purchase can change them).
     Object.keys(leafletMarkers).forEach(function (id) {
       leafletMarkers[id].forEach(function (m) {
@@ -129,6 +143,15 @@
         if (dot) dot.classList.toggle('found', found.has(id));
       });
     });
+  }
+  function renderMap() {
+    if (!window.L || !window.GTA6_PINS) {
+      document.getElementById('mapViewport').innerHTML =
+        '<p class="map-error">Map failed to load. Check your connection and reopen the app.</p>';
+      return;
+    }
+    if (!leafletMap) { initLeaflet(); return; }
+    syncMapMarkers();
   }
 
   // One entry card, used by the list view and by the pin detail sheet.
