@@ -146,57 +146,96 @@
           '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#0d0a14">' + d.num + '</text>';
       } else if (d.kind === 'approx') {
         body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="12" fill="' + color + '" fill-opacity="0.25" stroke="' + color + '" stroke-width="2.5" stroke-dasharray="5 4"/>' +
-          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '">' + d.num + '</text>';
+          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '" stroke="#fff" stroke-width="3" paint-order="stroke">' + d.num + '</text>';
       } else { // area
         body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="13" fill="' + color + '" fill-opacity="0.08" stroke="' + color + '" stroke-width="1.5" stroke-dasharray="2 4" opacity="0.85"/>' +
-          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '" opacity="0.85">' + d.num + '</text>';
+          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '" opacity="0.85" stroke="#fff" stroke-width="3" paint-order="stroke">' + d.num + '</text>';
       }
       return '<g class="' + cls + '" data-entry="' + d.id + '" data-section="' + d.section + '">' + body +
         '<title>' + esc(d.name) + '</title></g>';
     }).join('');
     document.getElementById('mapViewport').innerHTML =
       '<svg viewBox="0 0 1000 640" role="img" aria-label="Map of Leonida with secret locations">' +
-      '<rect width="1000" height="640" fill="#0a2036"/>' +
-      // ---- v1.0.6: mainland redrawn to follow the real Leonida geography
-      // more closely — our own simplified drawing, less detail than the
-      // real map. Same 1000x640 viewBox and same landmass bounds, so no
-      // pin moved: north coast up past Port Gellhorn, Vice Beach curve on
-      // the east, Grassrivers bulge on the west, Hamlet south coast.
-      '<path d="M178,128 L205,92 L255,58 L300,48 L350,55 L410,52 L470,58 L540,68 L585,72 L660,82 L730,100 L800,118 L860,140 L895,175 L918,235 L910,300 L895,360 L872,415 L845,455 L800,480 L730,498 L660,508 L580,512 L500,505 L420,498 L350,505 L290,488 L240,470 L205,445 L175,415 L158,375 L150,330 L158,285 L150,240 L165,195 Z" fill="#1d4a33" stroke="#2ee6c8" stroke-opacity=".35"/>' +
-      // Keys chain + islands
-      '<ellipse cx="300" cy="570" rx="60" ry="14" fill="#3a5a3a"/><ellipse cx="420" cy="585" rx="70" ry="14" fill="#3a5a3a"/><ellipse cx="540" cy="575" rx="55" ry="12" fill="#3a5a3a"/>' +
-      '<ellipse cx="170" cy="560" rx="34" ry="20" fill="#3a5a3a"/><ellipse cx="340" cy="610" rx="30" ry="14" fill="#3a5a3a"/>' +
-      '<ellipse cx="880" cy="170" rx="26" ry="34" fill="#3a5a3a"/><ellipse cx="880" cy="270" rx="20" ry="26" fill="#3a5a3a"/><ellipse cx="800" cy="470" rx="24" ry="16" fill="#3a5a3a"/>' +
-      // Featherstone Islands (far north; the Meerwunder pin sits on this)
-      '<ellipse cx="345" cy="30" rx="48" ry="13" fill="#3a5a3a"/>' +
-      // Small key for the Key Lento stash pin (532,553)
-      '<ellipse cx="532" cy="560" rx="28" ry="14" fill="#3a5a3a"/>' +
-      // Water: Cottonmouth Lake in the Grassrivers, plus two swamp channels.
-      '<ellipse cx="210" cy="335" rx="30" ry="16" fill="#0a2036" opacity="0.85"/>' +
-      '<g fill="none" stroke="#0a2036" stroke-width="5" stroke-linecap="round" opacity="0.75">' +
+            '<defs><clipPath id="landClip"><path d="M178,128 L205,92 L255,58 L300,48 L350,55 L410,52 L470,58 L540,68 L585,72 L660,82 L730,100 L800,118 L860,140 L895,175 L918,235 L910,300 L895,360 L872,415 L845,455 L800,480 L730,498 L660,508 L580,512 L500,505 L420,498 L350,505 L290,488 L240,470 L205,445 L175,415 L158,375 L150,330 L158,285 L150,240 L165,195 Z"/></clipPath></defs>' +
+      // ---- v1.0.7: terrain restyle - our own hand-drawn map in the light +
+      // terrain style of the interactive map (light blue sea, green land, +
+      // grey Vice City, white roads). Same 1000x640 viewBox and same +
+      // landmass bounds - NO pin moved. No IGN tiles, no Rockstar art. +
+      '<rect width="1000" height="640" fill="#7fb9de"/>' +
+      // subtle sea depth contours +
+      '<g fill="none" stroke="#69a6cf" stroke-width="10" stroke-linecap="round" opacity="0.22">' +
+      '<path d="M60,120 C140,180 120,300 70,420"/>' +
+      '<path d="M945,470 C885,535 905,595 845,630"/>' +
+      '<path d="M110,560 C220,520 300,560 390,545"/>' +
+      '<path d="M860,40 C900,90 880,150 920,200"/>' +
+      '</g>' +
+      // mainland base: light green, sandy coastline +
+      '<path d="M178,128 L205,92 L255,58 L300,48 L350,55 L410,52 L470,58 L540,68 L585,72 L660,82 L730,100 L800,118 L860,140 L895,175 L918,235 L910,300 L895,360 L872,415 L845,455 L800,480 L730,498 L660,508 L580,512 L500,505 L420,498 L350,505 L290,488 L240,470 L205,445 L175,415 L158,375 L150,330 L158,285 L150,240 L165,195 Z" fill="#a8cf8a" stroke="#d9c48f" stroke-width="2.5"/>' +
+      // terrain variation, clipped to the mainland +
+      '<g clip-path="url(#landClip)">' +
+      // Grassrivers swamp (west) - darker green +
+      '<path d="M150,280 C170,250 230,240 270,270 C310,300 300,360 270,400 C230,440 180,430 160,390 C140,350 140,310 150,280 Z" fill="#69ad60" opacity="0.9"/>' +
+      // Mt. Kalaga highlands (north-centre) +
+      '<path d="M380,50 C440,40 520,45 570,60 C600,75 580,105 520,112 C450,118 390,105 375,85 C365,68 368,55 380,50 Z" fill="#8fbf74" opacity="0.9"/>' +
+      // forest patches +
+      '<ellipse cx="660" cy="120" rx="70" ry="26" fill="#7fb96e" opacity="0.7"/>' +
+      '<ellipse cx="430" cy="240" rx="60" ry="30" fill="#7fb96e" opacity="0.6"/>' +
+      '<ellipse cx="360" cy="450" rx="55" ry="24" fill="#7fb96e" opacity="0.55"/>' +
+      '<ellipse cx="760" cy="470" rx="40" ry="18" fill="#8fbf74" opacity="0.6"/>' +
+      '<ellipse cx="300" cy="180" rx="45" ry="20" fill="#7fb96e" opacity="0.5"/>' +
+      // Vice City urban area - light grey +
+      '<path d="M610,205 L800,205 L818,250 L802,380 L620,380 L600,300 Z" fill="#dcdcdc"/>' +
+      // Water: Cottonmouth Lake + two swamp channels +
+      '<ellipse cx="210" cy="335" rx="30" ry="16" fill="#6fb3e0"/>' +
+      '<g fill="none" stroke="#6fb3e0" stroke-width="5" stroke-linecap="round" opacity="0.9">' +
       '<path d="M168,300 C195,322 215,342 228,368"/>' +
       '<path d="M188,418 C212,432 236,444 258,454"/>' +
       '</g>' +
-      // Beach band along the east coast (Vice Beach).
-      '<path d="M890,170 L910,235 L902,330 L878,415" fill="none" stroke="#e8d9a0" stroke-width="7" stroke-linecap="round" opacity="0.28"/>' +
-      // Highways & main roads.
-      '<g fill="none" stroke="#d8c690" stroke-linecap="round" opacity="0.55">' +
-      '<path d="M250,140 L290,80 L400,64 L540,72 L650,88 L730,104" stroke-width="3.5"/>' +  // north road: Port Gellhorn -> Mt. Kalaga -> Vice City
-      '<path d="M250,140 L222,250 L200,340" stroke-width="3"/>' +              // Port Gellhorn -> Grassrivers
-      '<path d="M155,320 L230,355 L320,385" stroke-width="3"/>' +              // Grassrivers west road
-      '<path d="M210,350 L270,425 L350,465" stroke-width="3"/>' +              // swamp road to Hamlet
-      '<path d="M180,450 L350,490 L580,500 L790,470" stroke-width="4"/>' +      // Hamlet highway (south)
-      '<path d="M690,310 L650,410 L605,490" stroke-width="3"/>' +              // Vice City -> Hamlet connector
-      '<path d="M888,168 L908,235 L900,330 L878,415" stroke-width="4"/>' +      // east coastal highway (Vice Beach)
+      // Highways & main roads - pale casing, white core +
+      '<g fill="none" stroke="#b7c8b4" stroke-linecap="round" opacity="0.9">' +
+      '<path d="M250,140 L290,80 L400,64 L540,72 L650,88 L730,104" stroke-width="6"/>' +
+      '<path d="M250,140 L222,250 L200,340" stroke-width="5"/>' +
+      '<path d="M155,320 L230,355 L320,385" stroke-width="5"/>' +
+      '<path d="M210,350 L270,425 L350,465" stroke-width="5"/>' +
+      '<path d="M180,450 L350,490 L580,500 L790,470" stroke-width="6"/>' +
+      '<path d="M690,310 L650,410 L605,490" stroke-width="5"/>' +
+      '<path d="M888,168 L908,235 L900,330 L878,415" stroke-width="6"/>' +
       '</g>' +
-      // Vice City street-grid suggestion.
-      '<g fill="none" stroke="#9fd8e8" stroke-width="1" opacity="0.16">' +
-      '<path d="M620,212 L620,368"/><path d="M652,212 L652,368"/><path d="M684,212 L684,368"/><path d="M716,212 L716,368"/><path d="M748,212 L748,368"/><path d="M780,212 L780,368"/>' +
-      '<path d="M612,222 L788,222"/><path d="M612,254 L788,254"/><path d="M612,286 L788,286"/><path d="M612,318 L788,318"/><path d="M612,350 L788,350"/>' +
+      '<g fill="none" stroke="#ffffff" stroke-linecap="round" opacity="0.95">' +
+      '<path d="M250,140 L290,80 L400,64 L540,72 L650,88 L730,104" stroke-width="3.5"/>' +
+      '<path d="M250,140 L222,250 L200,340" stroke-width="3"/>' +
+      '<path d="M155,320 L230,355 L320,385" stroke-width="3"/>' +
+      '<path d="M210,350 L270,425 L350,465" stroke-width="3"/>' +
+      '<path d="M180,450 L350,490 L580,500 L790,470" stroke-width="4"/>' +
+      '<path d="M690,310 L650,410 L605,490" stroke-width="3"/>' +
+      '<path d="M888,168 L908,235 L900,330 L878,415" stroke-width="4"/>' +
       '</g>' +
-      // Bridges to the Keys.
-      '<g fill="none" stroke="#d8c690" stroke-width="3" stroke-linecap="round" opacity="0.6">' +
+      // Vice City street grid - denser, white on the grey urban area +
+      '<g fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.75">' +
+      '<path d="M620,212 L620,372"/><path d="M648,212 L648,372"/><path d="M676,212 L676,372"/><path d="M704,212 L704,372"/><path d="M732,212 L732,372"/><path d="M760,212 L760,372"/><path d="M788,212 L788,372"/>' +
+      '<path d="M612,222 L796,222"/><path d="M612,248 L796,248"/><path d="M612,274 L796,274"/><path d="M612,300 L796,300"/><path d="M612,326 L796,326"/><path d="M612,352 L796,352"/>' +
+      '</g>' +
+      // Airport runways south of Vice City +
+      '<g fill="#c9c9c9" stroke="#ffffff" stroke-width="1">' +
+      '<rect x="655" y="398" width="85" height="9" rx="2" transform="rotate(-8 697 402)"/>' +
+      '<rect x="660" y="416" width="70" height="7" rx="2" transform="rotate(-8 695 419)"/>' +
+      '</g>' +
+      // Bridges to the Keys - white +
+      '<g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.9">' +
       '<path d="M300,490 L300,558"/><path d="M420,498 L420,570"/><path d="M540,508 L540,562"/>' +
+      '</g>' +
+      '</g>' +
+      // Beach sand along the east coast (Vice Beach) and the south coast - +
+      // straddles the shoreline, so it reads as beach + shallow water. +
+      '<path d="M890,170 L910,235 L902,330 L878,415" fill="none" stroke="#e9d9a0" stroke-width="9" stroke-linecap="round" opacity="0.95"/>' +
+      '<path d="M845,455 L800,480 L730,498 L660,508 L580,512" fill="none" stroke="#e9d9a0" stroke-width="5" stroke-linecap="round" opacity="0.7"/>' +
+      // Keys chain + islands - green with sandy edges +
+      '<g fill="#a8cf8a" stroke="#e0cd96" stroke-width="2">' +
+      '<ellipse cx="300" cy="570" rx="60" ry="14"/><ellipse cx="420" cy="585" rx="70" ry="14"/><ellipse cx="540" cy="575" rx="55" ry="12"/>' +
+      '<ellipse cx="170" cy="560" rx="34" ry="20"/><ellipse cx="340" cy="610" rx="30" ry="14"/>' +
+      '<ellipse cx="880" cy="170" rx="26" ry="34"/><ellipse cx="880" cy="270" rx="20" ry="26"/><ellipse cx="800" cy="470" rx="24" ry="16"/>' +
+      '<ellipse cx="345" cy="30" rx="48" ry="13"/>' +
+      '<ellipse cx="532" cy="560" rx="28" ry="14"/>' +
       '</g>' +
       '<text class="map-label" x="425" y="38">FEATHERSTONE</text>' +
       '<text class="map-label" x="640" y="270">VICE CITY</text>' +
