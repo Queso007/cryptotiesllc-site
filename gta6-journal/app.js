@@ -55,12 +55,48 @@
   }
   function dotPos(entry, idx) {
     var p = anchorFor(entry);
-    // deterministic jitter so same-area dots don't stack exactly
-    var jx = ((idx * 37) % 5 - 2) * 11;
-    var jy = ((idx * 53) % 5 - 2) * 9;
+    // deterministic jitter so same-area dots don't stack exactly.
+    // Modulus 7 (not 5): the old modulus-5 jitter repeated every 5 entries,
+    // so treasures-16 and treasures-21 landed on the exact same point and
+    // one dot was completely hidden. Dots stay within ~25px of their anchor.
+    var jx = ((idx * 37) % 7 - 3) * 8;
+    var jy = ((idx * 53) % 7 - 3) * 7;
     return { x: Math.max(24, Math.min(976, p.x + jx)), y: Math.max(24, Math.min(616, p.y + jy)) };
   }
   var DOT_COLORS = { places: '#2ee6c8', loot: '#ffc93c', treasures: '#ff2e88', cars: '#b78cff' };
+
+  // ---- IGN-matched pin positions (v1.0.4) ----
+  // From research/ign-matches.json (IGN MapGenie coords, matched 2026-11-20).
+  // Linear transform into the schematic's 1000x640 space:
+  //   x = 1527.6 * lng + 1517.9   (anchored on Belpoint lighthouse <-> Vice Beach bar)
+  //   y = -865.4 * lat + 909.4    (anchored on mainland south coast <-> north edge)
+  // The schematic is stylised, not a projection: its west (Grassrivers) is
+  // drawn compressed, so three western pins are hand-placed on their region
+  // shapes instead (marked HAND). kind: 'exact' = solid pin (high+medium
+  // confidence), 'approx' = dashed-ring pin (low confidence). Entries not
+  // listed here keep the anchor-based dashed "general area" circle.
+  var IGN_PINS = {
+    'places-2': [{ x: 304, y: 46, kind: 'approx' }],          // UFO debris field (low)
+    'places-3': [{ x: 526, y: 417, kind: 'exact' }],          // Bluegrass Antenna Mast (med)
+    'places-5': [{ x: 880, y: 270, kind: 'exact' }],          // Vespucci Mansion — HAND: on the drawn Vespucci island ellipse (med)
+    'loot-9': [{ x: 532, y: 553, kind: 'exact' }],            // Exotic Animals Front, Key Lento (high)
+    'loot-10': [{ x: 568, y: 435, kind: 'exact' }],           // Apollo warehouse (med)
+    'loot-11': [{ x: 330, y: 495, kind: 'approx' }],          // Crab outpost airboat — HAND: SW swamps north of the Keys (low)
+    'loot-15': [{ x: 530, y: 457, kind: 'exact' },            // M7 junkyard safe (high)
+                { x: 275, y: 211, kind: 'exact' }],           // Kingpin Bowling safe (high)
+    'treasures-22': [{ x: 185, y: 552, kind: 'approx' }],     // Belpoint flamingos — HAND: SE side of drawn Belpoint island (low)
+    'treasures-23': [{ x: 340, y: 34, kind: 'exact' }],       // Wreck of the Meerwunder — HAND: on the Featherstone island (high)
+    'cars-27': [{ x: 636, y: 302, kind: 'exact' }],           // Infernus (high)
+    'cars-28': [{ x: 736, y: 191, kind: 'exact' }],           // Vitello (high)
+    'cars-29': [{ x: 529, y: 458, kind: 'exact' }],           // Gauntlet Hellfire (high)
+    'cars-30': [{ x: 563, y: 78, kind: 'exact' }],            // Tempesta — nudged onto the mainland's north edge (med)
+    'cars-32': [{ x: 586, y: 201, kind: 'exact' }],           // Paragon (med)
+    'cars-33': [{ x: 621, y: 434, kind: 'exact' }],           // Furia (high)
+    'cars-34': [{ x: 677, y: 368, kind: 'exact' }],           // Toros — shared Pegassi Residences proxy pin, offset -16 (med)
+    'cars-36': [{ x: 585, y: 397, kind: 'exact' }],           // Banshee (high)
+    'cars-37': [{ x: 666, y: 259, kind: 'approx' }],          // Windsor (low)
+    'cars-40': [{ x: 709, y: 368, kind: 'exact' }]            // Cheetah — shared Pegassi Residences proxy pin, offset +16 (med)
+  };
 
   function renderTabs() {
     var nav = document.getElementById('tabs');
@@ -79,13 +115,35 @@
 
   function renderMap() {
     var list = ENTRIES.filter(function (e) { return e.section === active; });
-    var dots = list.map(function (e, i) {
-      var p = dotPos(e, i);
-      var cls = found.has(e.id) ? 'map-dot found' : 'map-dot';
-      return '<g class="' + cls + '" data-entry="' + e.id + '">' +
-        '<circle cx="' + p.x + '" cy="' + p.y + '" r="11" fill="' + DOT_COLORS[e.section] + '"/>' +
-        '<text x="' + p.x + '" y="' + (p.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#0d0a14">' + (i + 1) + '</text>' +
-        '<title>' + esc(e.name) + '</title></g>';
+    var dots = [];
+    list.forEach(function (e, i) {
+      var pins = IGN_PINS[e.id];
+      if (pins) {
+        pins.forEach(function (p) {
+          dots.push({ id: e.id, num: i + 1, x: p.x, y: p.y, kind: p.kind, section: e.section, name: e.name });
+        });
+      } else {
+        // No IGN match: dashed "general area" circle at the anchor position.
+        var p = dotPos(e, i);
+        dots.push({ id: e.id, num: i + 1, x: p.x, y: p.y, kind: 'area', section: e.section, name: e.name });
+      }
+    });
+    var dotsSvg = dots.map(function (d) {
+      var cls = 'map-dot ' + d.kind + (found.has(d.id) ? ' found' : '');
+      var color = DOT_COLORS[d.section];
+      var body;
+      if (d.kind === 'exact') {
+        body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="11" fill="' + color + '"/>' +
+          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#0d0a14">' + d.num + '</text>';
+      } else if (d.kind === 'approx') {
+        body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="12" fill="' + color + '" fill-opacity="0.25" stroke="' + color + '" stroke-width="2.5" stroke-dasharray="5 4"/>' +
+          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '">' + d.num + '</text>';
+      } else { // area
+        body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="13" fill="' + color + '" fill-opacity="0.08" stroke="' + color + '" stroke-width="1.5" stroke-dasharray="2 4" opacity="0.85"/>' +
+          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '" opacity="0.85">' + d.num + '</text>';
+      }
+      return '<g class="' + cls + '" data-entry="' + d.id + '">' + body +
+        '<title>' + esc(d.name) + '</title></g>';
     }).join('');
     document.getElementById('mapWrap').innerHTML =
       '<svg viewBox="0 0 1000 640" role="img" aria-label="Schematic map of Leonida">' +
@@ -96,6 +154,9 @@
       '<ellipse cx="300" cy="570" rx="60" ry="14" fill="#3a5a3a"/><ellipse cx="420" cy="585" rx="70" ry="14" fill="#3a5a3a"/><ellipse cx="540" cy="575" rx="55" ry="12" fill="#3a5a3a"/>' +
       '<ellipse cx="170" cy="560" rx="34" ry="20" fill="#3a5a3a"/><ellipse cx="340" cy="610" rx="30" ry="14" fill="#3a5a3a"/>' +
       '<ellipse cx="880" cy="170" rx="26" ry="34" fill="#3a5a3a"/><ellipse cx="880" cy="270" rx="20" ry="26" fill="#3a5a3a"/><ellipse cx="800" cy="470" rx="24" ry="16" fill="#3a5a3a"/>' +
+      // Featherstone Islands (far north; added v1.0.4 for the Meerwunder pin)
+      '<ellipse cx="370" cy="34" rx="50" ry="15" fill="#3a5a3a"/>' +
+      '<text class="map-label" x="425" y="38">FEATHERSTONE</text>' +
       '<text class="map-label" x="640" y="270">VICE CITY</text>' +
       '<text class="map-label" x="800" y="330">VICE BEACH</text>' +
       '<text class="map-label" x="330" y="545">LEONIDA KEYS</text>' +
@@ -103,7 +164,7 @@
       '<text class="map-label" x="430" y="100">MT. KALAGA</text>' +
       '<text class="map-label" x="210" y="130">PORT GELLHORN</text>' +
       '<text class="map-label" x="560" y="500">HAMLET</text>' +
-      dots + '</svg>';
+      dotsSvg + '</svg>';
     document.querySelectorAll('.map-dot').forEach(function (g) {
       g.addEventListener('click', function () {
         var card = document.getElementById('entry-' + g.dataset.entry);
@@ -153,6 +214,7 @@
         '<div class="entry-top"><input type="checkbox" class="entry-check" data-id="' + e.id + '"' + (isFound ? ' checked' : '') + ' aria-label="Mark found">' +
         '<div><h3>' + (i + 1) + '. ' + esc(e.name) + '</h3>' +
         '<div class="area">' + esc(e.area) + '</div>' +
+        (e.note ? '<p class="entry-note warn">⚠ ' + esc(e.note) + '</p>' : '') +
         (sketch ? '<div class="sketch">' + sketch +
           '<p class="sketch-cap">Sketch — schematic, not to scale · tap to zoom</p></div>' : '') +
         '<p><b>Where:</b> ' + esc(e.location) + '</p>' +
