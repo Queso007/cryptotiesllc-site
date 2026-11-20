@@ -13,6 +13,7 @@
     <div>
       <h1>GTA 6 Secrets Journal</h1>
     </div>
+    <button id="viewToggle" class="view-toggle" type="button">☰ List view</button>
   </div>
   <div class="overall">
     <div class="overall-text"><span id="overallCount">0 / 42 found</span><span id="overallPct">0%</span></div>
@@ -20,14 +21,24 @@
   </div>
 </header>
 
-<section class="map-card">
-  <h2>Leonida — schematic map</h2>
-  <p class="map-note">Schematic only, not to scale. Solid dots are locations matched to the interactive map; dashed rings are approximate; dashed circles mark only the general area. Tap a dot to jump to its entry. Tap the map to open it full-screen and zoom.</p>
-  <div class="map-wrap" id="mapWrap"></div>
+<section class="map-card" id="mapCard">
+  <h2>Leonida — tap a pin for its secret</h2>
+  <p class="map-note">Our own simplified map of Leonida — almost like the real one, with less detail. Solid dots are exact locations matched to the interactive map; dashed rings are approximate; dashed circles mark only the general area. Drag to pan · scroll or pinch to zoom · tap a dot for its secret · ⛶ for full-screen.</p>
+  <div class="map-wrap" id="mapWrap">
+    <div class="map-viewport" id="mapViewport"></div>
+    <div class="map-controls">
+      <button id="mapZoomIn" type="button" aria-label="Zoom in">+</button>
+      <button id="mapZoomOut" type="button" aria-label="Zoom out">−</button>
+      <button id="mapZoomReset" type="button">Reset</button>
+      <button id="mapZoomFull" type="button" aria-label="Full screen">⛶</button>
+    </div>
+  </div>
   <p class="map-legend"><span><i class="lg exact"></i>Exact location</span><span><i class="lg approx"></i>Approximate</span><span><i class="lg area"></i>General area</span></p>
+  <p class="section-key"><span><i class="sk" style="background:#2ee6c8"></i>Secret Places (8)</span><span><i class="sk" style="background:#ffc93c"></i>Secret Loot (7)</span><span><i class="sk" style="background:#ff2e88"></i>Secret Treasures (11)</span><span><i class="sk" style="background:#b78cff"></i>Secret Cars (16)</span></p>
   <p class="ign-link">Want the real map? <a href="https://www.ign.com/maps/gta-6/leonida" target="_blank" rel="noopener">See the full interactive map on IGN ↗</a></p>
 </section>
 
+<div id="listView" hidden>
 <p class="map-intro">Every secret car, stash, treasure &amp; hidden place in Leonida — check them off as you find them.</p>
 
 <nav class="tabs" id="tabs" aria-label="Sections"></nav>
@@ -45,11 +56,19 @@
   <button class="unlock-btn" id="unlockBtn">Unlock for $2.00</button>
   <p class="lock-fine" id="lockFine"></p>
 </section>
+</div>
 
 <footer>
   <p>Unofficial fan guide. Not affiliated with, endorsed by, or connected to Rockstar Games or Take-Two Interactive. Grand Theft Auto and GTA are trademarks of Take-Two Interactive.</p>
   <p>Entries compiled from published launch-day guides (Nov 19–20, 2026). "Verified" means at least two independent guides agree; single-source entries are marked and may change as the community maps Leonida. Prices in USD.</p>
 </footer>
+
+<div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+<section class="detail-sheet" id="detailSheet" hidden role="dialog" aria-modal="true" aria-label="Secret details">
+  <div class="sheet-handle"></div>
+  <button class="sheet-close" id="sheetClose" type="button" aria-label="Close">✕</button>
+  <div id="sheetBody"></div>
+</section>
 
 <div class="zoom-overlay" id="zoomOverlay" hidden role="dialog" aria-modal="true" aria-label="Zoomed map">
   <div class="zoom-bar">
