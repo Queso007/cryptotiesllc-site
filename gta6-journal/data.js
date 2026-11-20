@@ -239,6 +239,7 @@ window.GTA6_DATA = {
    "name": "Cocaine Flamingos — Capri Halloween House garden",
    "area": "Capri",
    "location": "Garden of the Halloween House, in the six-street grid south of Tortoise Lake, Capri.",
+   "note": "Location disputed — one map puts the Halloween House near Gellhorn instead of Capri; verify in game.",
    "how": "Shoot the black-and-white-beaked flamingo's body; the package drops out and counts. Watch for police — firing a gun in a front garden can draw attention.",
    "verified": false
   },
