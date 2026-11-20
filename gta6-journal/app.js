@@ -156,6 +156,31 @@
       '<ellipse cx="880" cy="170" rx="26" ry="34" fill="#3a5a3a"/><ellipse cx="880" cy="270" rx="20" ry="26" fill="#3a5a3a"/><ellipse cx="800" cy="470" rx="24" ry="16" fill="#3a5a3a"/>' +
       // Featherstone Islands (far north; added v1.0.4 for the Meerwunder pin)
       '<ellipse cx="370" cy="34" rx="50" ry="15" fill="#3a5a3a"/>' +
+      // ---- v1.0.5: streets & roads (own drawing, secrets only) ----
+      // Water: Cottonmouth Lake in the Grassrivers.
+      '<ellipse cx="210" cy="335" rx="30" ry="16" fill="#0a2036" opacity="0.85"/>' +
+      // Beach band along the east coast (Vice Beach).
+      '<path d="M888,165 L912,235 L892,335 L858,425" fill="none" stroke="#e8d9a0" stroke-width="7" stroke-linecap="round" opacity="0.28"/>' +
+      // Highways & main roads.
+      '<g fill="none" stroke="#d8c690" stroke-linecap="round" opacity="0.55">' +
+      '<path d="M250,140 L380,108 L480,96 L620,90" stroke-width="3.5"/>' +       // north road: Port Gellhorn -> Mt. Kalaga -> Vice City
+      '<path d="M250,140 L222,250 L200,340" stroke-width="3"/>' +              // Port Gellhorn -> Grassrivers
+      '<path d="M150,320 L230,355 L320,385" stroke-width="3"/>' +              // Grassrivers west road
+      '<path d="M210,350 L270,425 L350,465" stroke-width="3"/>' +              // swamp road to Hamlet
+      '<path d="M170,455 L420,488 L600,498 L790,465" stroke-width="4"/>' +      // Hamlet highway (south)
+      '<path d="M690,310 L650,410 L605,490" stroke-width="3"/>' +              // Vice City -> Hamlet connector
+      '<path d="M872,160 L898,235 L884,330 L852,420" stroke-width="4"/>' +      // east coastal highway (Vice Beach)
+      '</g>' +
+      // Vice City street-grid suggestion.
+      '<g fill="none" stroke="#9fd8e8" stroke-width="1" opacity="0.16">' +
+      '<path d="M620,212 L620,368"/><path d="M652,212 L652,368"/><path d="M684,212 L684,368"/><path d="M716,212 L716,368"/><path d="M748,212 L748,368"/><path d="M780,212 L780,368"/>' +
+      '<path d="M612,222 L788,222"/><path d="M612,254 L788,254"/><path d="M612,286 L788,286"/><path d="M612,318 L788,318"/><path d="M612,350 L788,350"/>' +
+      '</g>' +
+      // Bridges to the Keys and islands.
+      '<g fill="none" stroke="#d8c690" stroke-width="3" stroke-linecap="round" opacity="0.6">' +
+      '<path d="M300,505 L300,558"/><path d="M420,500 L420,570"/><path d="M540,505 L540,560"/>' +
+      '<path d="M800,442 L800,458"/><path d="M908,248 L890,256"/>' +
+      '</g>' +
       '<text class="map-label" x="425" y="38">FEATHERSTONE</text>' +
       '<text class="map-label" x="640" y="270">VICE CITY</text>' +
       '<text class="map-label" x="800" y="330">VICE BEACH</text>' +
@@ -210,11 +235,14 @@
         ? '<span class="badge verified">✓ Verified — 2+ guides agree</span>'
         : '<span class="badge single">⚠ Single source — unconfirmed</span>';
       var sketch = (window.GTA6_SKETCHES || {})[e.id] || '';
+      var photo = '<div class="spot-photo"><img src="spot-photos/' + e.id + '.jpg" alt="Photo-style image: ' + esc(e.name) + '" loading="lazy" onerror="this.parentElement.style.display=\'none\'">' +
+        '<p class="spot-photo-cap">Photo-style image — original art, not an in-game screenshot · tap to zoom</p></div>';
       return '<article class="entry' + (isFound ? ' found' : '') + '" id="entry-' + e.id + '">' +
         '<div class="entry-top"><input type="checkbox" class="entry-check" data-id="' + e.id + '"' + (isFound ? ' checked' : '') + ' aria-label="Mark found">' +
         '<div><h3>' + (i + 1) + '. ' + esc(e.name) + '</h3>' +
         '<div class="area">' + esc(e.area) + '</div>' +
         (e.note ? '<p class="entry-note warn">⚠ ' + esc(e.note) + '</p>' : '') +
+        photo +
         (sketch ? '<div class="sketch">' + sketch +
           '<p class="sketch-cap">Sketch — schematic, not to scale · tap to zoom</p></div>' : '') +
         '<p><b>Where:</b> ' + esc(e.location) + '</p>' +
@@ -350,12 +378,19 @@
       var svg = document.querySelector('#mapWrap svg');
       if (svg) zOpen(svg.outerHTML, 'map');
     });
-    // Tap any entry sketch to zoom it.
+    // Tap any entry sketch or spot photo to zoom it.
     document.getElementById('entries').addEventListener('click', function (ev) {
       var sk = ev.target.closest ? ev.target.closest('.sketch') : null;
-      if (!sk) return;
-      var svg = sk.querySelector('svg');
-      if (svg) zOpen(svg.outerHTML, 'sketch');
+      if (sk) {
+        var svg = sk.querySelector('svg');
+        if (svg) zOpen(svg.outerHTML, 'sketch');
+        return;
+      }
+      var ph = ev.target.closest ? ev.target.closest('.spot-photo') : null;
+      if (ph) {
+        var img = ph.querySelector('img');
+        if (img) zOpen('<img src="' + img.getAttribute('src') + '" alt="">', 'photo');
+      }
     });
   }
 
