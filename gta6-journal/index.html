@@ -29,8 +29,9 @@
 
 <section class="map-card">
   <h2>Leonida — schematic map</h2>
-  <p class="map-note">Schematic only, not to scale. Dots mark the approximate area of each secret in the open section — guides give landmarks and street names, not coordinates. Tap a dot to jump to its entry.</p>
+  <p class="map-note">Schematic only, not to scale. Dots mark the approximate area of each secret in the open section — guides give landmarks and street names, not coordinates. Tap a dot to jump to its entry. Tap the map (or any sketch) to open it full-screen and zoom.</p>
   <div class="map-wrap" id="mapWrap"></div>
+  <p class="ign-link">Want the real map? <a href="https://www.ign.com/maps/gta-6/leonida" target="_blank" rel="noopener">See the full interactive map on IGN ↗</a></p>
 </section>
 
 <main id="entries" class="entries"></main>
@@ -47,6 +48,17 @@
   <p>Unofficial fan guide. Not affiliated with, endorsed by, or connected to Rockstar Games or Take-Two Interactive. Grand Theft Auto and GTA are trademarks of Take-Two Interactive.</p>
   <p>Entries compiled from published launch-day guides (Nov 19–20, 2026). "Verified" means at least two independent guides agree; single-source entries are marked and may change as the community maps Leonida. Prices in USD.</p>
 </footer>
+
+<div class="zoom-overlay" id="zoomOverlay" hidden role="dialog" aria-modal="true" aria-label="Zoomed map">
+  <div class="zoom-bar">
+    <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+    <button id="zoomReset" type="button">Reset</button>
+    <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+    <button id="zoomClose" type="button">✕ Close</button>
+  </div>
+  <div class="zoom-stage" id="zoomStage"></div>
+  <p class="zoom-hint">Pinch or scroll to zoom · drag to pan · tap the empty area to close</p>
+</div>
 
 <script src="data.js"></script>
 <script src="sketches.js"></script>
