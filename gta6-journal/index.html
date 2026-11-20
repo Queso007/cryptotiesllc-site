@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>GTA 6 Secrets Journal — Every secret in Leonida</title>
+<link rel="stylesheet" href="leaflet/leaflet.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -23,7 +24,7 @@
 
 <section class="map-card" id="mapCard">
   <h2>Leonida — tap a pin for its secret</h2>
-  <p class="map-note">Our own simplified map of Leonida — almost like the real one, with less detail. Solid dots are exact locations matched to the interactive map; dashed rings are approximate; dashed circles mark only the general area. Drag to pan · scroll or pinch to zoom · tap a dot for its secret · ⛶ for full-screen.</p>
+  <p class="map-note">The real Leonida map from the GTA VI Mapping Community. Solid dots are exact locations; dashed rings are approximate; dashed circles mark only the general area. Drag to pan · scroll or pinch to zoom · tap a dot for its secret · ⛶ for full-screen.</p>
   <div class="map-wrap" id="mapWrap">
     <div class="map-viewport" id="mapViewport"></div>
     <div class="map-controls">
@@ -35,7 +36,7 @@
   </div>
   <p class="map-legend"><span><i class="lg exact"></i>Exact location</span><span><i class="lg approx"></i>Approximate</span><span><i class="lg area"></i>General area</span></p>
   <p class="section-key"><span><i class="sk" style="background:#2ee6c8"></i>Secret Places (8)</span><span><i class="sk" style="background:#ffc93c"></i>Secret Loot (7)</span><span><i class="sk" style="background:#ff2e88"></i>Secret Treasures (11)</span><span><i class="sk" style="background:#b78cff"></i>Secret Cars (16)</span></p>
-  <p class="ign-link">Want the real map? <a href="https://www.ign.com/maps/gta-6/leonida" target="_blank" rel="noopener">See the full interactive map on IGN ↗</a></p>
+  <p class="map-credit">Map: GTA VI Mapping Community (CC BY 4.0) — <a href="https://map.gtadb.org" target="_blank" rel="noopener">map.gtadb.org</a> · Tiles are bundled with the app, so the map works offline.</p>
 </section>
 
 <div id="listView" hidden>
@@ -83,6 +84,8 @@
 
 <script src="data.js"></script>
 <script src="sketches.js"></script>
+<script src="leaflet/leaflet.js"></script>
+<script src="pins.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

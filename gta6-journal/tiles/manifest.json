@@ -1,0 +1,40 @@
+{
+ "tileSize": 512,
+ "x0": -12000,
+ "y1": 10500,
+ "s0": 0.03,
+ "worldMeters": [
+  17000,
+  21000
+ ],
+ "zooms": {
+  "0": {
+   "scale": 0.03,
+   "tilesX": 1,
+   "tilesY": 2
+  },
+  "1": {
+   "scale": 0.06,
+   "tilesX": 2,
+   "tilesY": 3
+  },
+  "2": {
+   "scale": 0.12,
+   "tilesX": 4,
+   "tilesY": 5
+  },
+  "3": {
+   "scale": 0.24,
+   "tilesX": 8,
+   "tilesY": 10
+  },
+  "4": {
+   "scale": 0.48,
+   "tilesX": 16,
+   "tilesY": 20
+  }
+ },
+ "source": "GTADB staticmap API (api.gtadb.org), map data CC BY 4.0 GTA VI Mapping Community",
+ "tiles": 428,
+ "bytes": 8486121
+}

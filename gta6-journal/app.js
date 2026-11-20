@@ -1,4 +1,4 @@
-// GTA 6 Secrets Journal — checklist, schematic map, section unlocks.
+// GTA 6 Secrets Journal — checklist, real community map, section unlocks.
 // Web build: locked sections unlock via ?unlock=all (preview only).
 // Play build: the Android wrapper calls window.GTA6Journal.setUnlocked(id)
 // after a real Play Billing purchase. Prices: Loot / Treasures / Cars $2 each.
@@ -34,71 +34,10 @@
     });
   }
 
-  // ---- schematic map anchors (approximate area positions; not to scale) ----
-  var ANCHORS = [
-    ['vice beach', 820, 300], ['ocean beach', 820, 320], ['leaf links', 800, 270],
-    ['starfish island', 800, 470], ['catalan bay', 800, 470], ['capri', 880, 170],
-    ['vespucci', 880, 270], ['washington island', 740, 170], ['tequesta', 720, 210],
-    ['peacock', 830, 370], ['crosstown', 680, 270], ['downtown', 690, 300],
-    ['vice city', 700, 290], ['belville', 770, 210], ['waning sands', 840, 440],
-    ['leonard county', 830, 430], ['leonida keys', 420, 560], ['key lento', 400, 560],
-    ['abismo key', 470, 580], ['featherstone', 340, 600], ['belpoint', 170, 560],
-    ['gambit bay', 520, 540], ['grassrivers', 200, 360], ['cottonmouth', 230, 330],
-    ['pelican valley', 280, 500], ['mariana county', 300, 400], ['port gellhorn', 250, 140],
-    ['kelly county', 350, 190], ['mount kalaga', 480, 110], ['hamlet', 590, 470],
-    ['south vice-dale', 600, 440], ['vice-dale', 620, 420]
-  ];
-  function anchorFor(entry) {
-    var a = (entry.area + ' ' + entry.location).toLowerCase();
-    for (var i = 0; i < ANCHORS.length; i++) {
-      if (a.indexOf(ANCHORS[i][0]) !== -1) return { x: ANCHORS[i][1], y: ANCHORS[i][2] };
-    }
-    return { x: 500, y: 320 };
-  }
-  function dotPos(entry, idx) {
-    var p = anchorFor(entry);
-    // deterministic jitter so same-area dots don't stack exactly.
-    // Modulus 7 (not 5): the old modulus-5 jitter repeated every 5 entries,
-    // so treasures-16 and treasures-21 landed on the exact same point and
-    // one dot was completely hidden. Dots stay within ~25px of their anchor.
-    var jx = ((idx * 37) % 7 - 3) * 8;
-    var jy = ((idx * 53) % 7 - 3) * 7;
-    return { x: Math.max(24, Math.min(976, p.x + jx)), y: Math.max(24, Math.min(616, p.y + jy)) };
-  }
   var DOT_COLORS = { places: '#2ee6c8', loot: '#ffc93c', treasures: '#ff2e88', cars: '#b78cff' };
-
-  // ---- IGN-matched pin positions (v1.0.4) ----
-  // From research/ign-matches.json (IGN MapGenie coords, matched 2026-11-20).
-  // Linear transform into the schematic's 1000x640 space:
-  //   x = 1527.6 * lng + 1517.9   (anchored on Belpoint lighthouse <-> Vice Beach bar)
-  //   y = -865.4 * lat + 909.4    (anchored on mainland south coast <-> north edge)
-  // The schematic is stylised, not a projection: its west (Grassrivers) is
-  // drawn compressed, so three western pins are hand-placed on their region
-  // shapes instead (marked HAND). kind: 'exact' = solid pin (high+medium
-  // confidence), 'approx' = dashed-ring pin (low confidence). Entries not
-  // listed here keep the anchor-based dashed "general area" circle.
-  var IGN_PINS = {
-    'places-2': [{ x: 304, y: 46, kind: 'approx' }],          // UFO debris field (low)
-    'places-3': [{ x: 526, y: 417, kind: 'exact' }],          // Bluegrass Antenna Mast (med)
-    'places-5': [{ x: 880, y: 270, kind: 'exact' }],          // Vespucci Mansion — HAND: on the drawn Vespucci island ellipse (med)
-    'loot-9': [{ x: 532, y: 553, kind: 'exact' }],            // Exotic Animals Front, Key Lento (high)
-    'loot-10': [{ x: 568, y: 435, kind: 'exact' }],           // Apollo warehouse (med)
-    'loot-11': [{ x: 330, y: 495, kind: 'approx' }],          // Crab outpost airboat — HAND: SW swamps north of the Keys (low)
-    'loot-15': [{ x: 530, y: 457, kind: 'exact' },            // M7 junkyard safe (high)
-                { x: 275, y: 211, kind: 'exact' }],           // Kingpin Bowling safe (high)
-    'treasures-22': [{ x: 185, y: 552, kind: 'approx' }],     // Belpoint flamingos — HAND: SE side of drawn Belpoint island (low)
-    'treasures-23': [{ x: 340, y: 34, kind: 'exact' }],       // Wreck of the Meerwunder — HAND: on the Featherstone island (high)
-    'cars-27': [{ x: 636, y: 302, kind: 'exact' }],           // Infernus (high)
-    'cars-28': [{ x: 736, y: 191, kind: 'exact' }],           // Vitello (high)
-    'cars-29': [{ x: 529, y: 458, kind: 'exact' }],           // Gauntlet Hellfire (high)
-    'cars-30': [{ x: 563, y: 78, kind: 'exact' }],            // Tempesta — nudged onto the mainland's north edge (med)
-    'cars-32': [{ x: 586, y: 201, kind: 'exact' }],           // Paragon (med)
-    'cars-33': [{ x: 621, y: 434, kind: 'exact' }],           // Furia (high)
-    'cars-34': [{ x: 677, y: 368, kind: 'exact' }],           // Toros — shared Pegassi Residences proxy pin, offset -16 (med)
-    'cars-36': [{ x: 585, y: 397, kind: 'exact' }],           // Banshee (high)
-    'cars-37': [{ x: 666, y: 259, kind: 'approx' }],          // Windsor (low)
-    'cars-40': [{ x: 709, y: 368, kind: 'exact' }]            // Cheetah — shared Pegassi Residences proxy pin, offset +16 (med)
-  };
+  // Pin positions live in pins.js (window.GTA6_PINS): game coords (metres) on
+  // the GTADB community map. kind: 'exact' solid pin, 'approx' dashed ring,
+  // 'area' dashed general-area circle. loot-15 has two pins (two safes).
 
   function renderTabs() {
     var nav = document.getElementById('tabs');
@@ -115,141 +54,81 @@
     });
   }
 
+  // ---- the real community map (Leaflet + self-hosted GTADB tiles) ----
+  // The map is the main screen: every entry in every section gets a pin,
+  // coloured by section, numbered within its section. 43 dots for 42
+  // entries (loot-15 has two locations). Leaflet is created once; later
+  // renders only refresh the found-state classes on the markers.
+  var leafletMap = null;
+  var leafletMarkers = {}; // entry id -> [marker, ...]
+
+  function pinLatLng(p) {
+    // CRS.Simple: pixel y grows downward, so a world pixel (px, py) is
+    // latlng [-py, px]. (Leaflet's unproject does the same, but this is explicit.)
+    var M = window.GTA6_MAP;
+    return L.latLng(-(M.y1 - p.y) * M.s0, (p.x - M.x0) * M.s0);
+  }
+  function pinIcon(d) {
+    var cls = 'map-dot ' + d.kind + (found.has(d.id) ? ' found' : '');
+    var color = DOT_COLORS[d.section];
+    var inner;
+    if (d.kind === 'exact') inner = '<span class="dot-solid" style="background:' + color + '">' + d.num + '</span>';
+    else if (d.kind === 'approx') inner = '<span class="dot-approx" style="color:' + color + '">' + d.num + '</span>';
+    else inner = '<span class="dot-area" style="color:' + color + '">' + d.num + '</span>';
+    return L.divIcon({
+      className: 'map-dot-icon',
+      html: '<div class="' + cls + '" data-entry="' + d.id + '" title="' + esc(d.name) + '">' + inner + '</div>',
+      iconSize: [26, 26], iconAnchor: [13, 13]
+    });
+  }
+  function initLeaflet() {
+    var M = window.GTA6_MAP;
+    var W = 17000 * M.s0, H = 21000 * M.s0; // world size in px at zoom 0
+    // CRS.Simple puts the origin at the top-left with latitude NEGATIVE
+    // going down, so the world bounds are [[-H, 0], [0, W]].
+    var bounds = [[-H, 0], [0, W]];
+    leafletMap = L.map('mapViewport', {
+      crs: L.CRS.Simple,
+      minZoom: 0, maxZoom: 4,
+      zoomSnap: 0.25, zoomDelta: 0.5,
+      zoomControl: false, attributionControl: false,
+      maxBounds: [[-H - 80, -80], [80, W + 80]],
+      maxBoundsViscosity: 0.8
+    });
+    L.tileLayer('tiles/{z}/{x}/{y}.jpg', {
+      tileSize: 512, minZoom: 0, maxZoom: 4, bounds: bounds, noWrap: true
+    }).addTo(leafletMap);
+    leafletMap.fitBounds(bounds);
+    window.GTA6_PINS.forEach(function (p) {
+      var e = ENTRIES.find(function (x) { return x.id === p.id; }) ||
+              ENTRIES.find(function (x) { return x.id === (p.parent || ''); });
+      if (!e) return;
+      // number = index of the entry within its section (loot-15's two pins share it)
+      var idx = ENTRIES.filter(function (x) { return x.section === e.section; })
+        .findIndex(function (x) { return x.id === e.id; }) + 1;
+      var d = { id: e.id, num: idx, section: e.section, name: e.name, kind: p.kind };
+      var marker = L.marker(pinLatLng(p), { icon: pinIcon(d), title: e.name });
+      marker.on('click', function () { openDetail(e.id); });
+      marker.addTo(leafletMap);
+      (leafletMarkers[e.id] = leafletMarkers[e.id] || []).push(marker);
+    });
+  }
   function renderMap() {
-    // The map is the main screen: every entry in every section gets a pin,
-    // coloured by section, numbered within its section. 43 dots for 42
-    // entries (loot-15 has two locations). Pin positions are unchanged
-    // from v1.0.4/v1.0.5 — only the drawing around them changed.
-    var dots = [];
-    SECTIONS.forEach(function (s) {
-      var idx = 0;
-      ENTRIES.filter(function (e) { return e.section === s.id; }).forEach(function (e) {
-        idx++;
-        var pins = IGN_PINS[e.id];
-        if (pins) {
-          pins.forEach(function (p) {
-            dots.push({ id: e.id, num: idx, x: p.x, y: p.y, kind: p.kind, section: e.section, name: e.name });
-          });
-        } else {
-          // No IGN match: dashed "general area" circle at the anchor position.
-          var p = dotPos(e, idx - 1);
-          dots.push({ id: e.id, num: idx, x: p.x, y: p.y, kind: 'area', section: e.section, name: e.name });
-        }
+    if (!window.L || !window.GTA6_PINS) {
+      document.getElementById('mapViewport').innerHTML =
+        '<p class="map-error">Map failed to load. Check your connection and reopen the app.</p>';
+      return;
+    }
+    if (!leafletMap) { initLeaflet(); return; }
+    // Refresh found-state classes (a check or purchase can change them).
+    Object.keys(leafletMarkers).forEach(function (id) {
+      leafletMarkers[id].forEach(function (m) {
+        var el = m.getElement();
+        if (!el) return;
+        var dot = el.querySelector('.map-dot');
+        if (dot) dot.classList.toggle('found', found.has(id));
       });
     });
-    var dotsSvg = dots.map(function (d) {
-      var cls = 'map-dot ' + d.kind + (found.has(d.id) ? ' found' : '');
-      var color = DOT_COLORS[d.section];
-      var body;
-      if (d.kind === 'exact') {
-        body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="11" fill="' + color + '"/>' +
-          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="#0d0a14">' + d.num + '</text>';
-      } else if (d.kind === 'approx') {
-        body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="12" fill="' + color + '" fill-opacity="0.25" stroke="' + color + '" stroke-width="2.5" stroke-dasharray="5 4"/>' +
-          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '" stroke="#fff" stroke-width="3" paint-order="stroke">' + d.num + '</text>';
-      } else { // area
-        body = '<circle cx="' + d.x + '" cy="' + d.y + '" r="13" fill="' + color + '" fill-opacity="0.08" stroke="' + color + '" stroke-width="1.5" stroke-dasharray="2 4" opacity="0.85"/>' +
-          '<text x="' + d.x + '" y="' + (d.y + 4) + '" text-anchor="middle" font-size="11" font-weight="bold" fill="' + color + '" opacity="0.85" stroke="#fff" stroke-width="3" paint-order="stroke">' + d.num + '</text>';
-      }
-      return '<g class="' + cls + '" data-entry="' + d.id + '" data-section="' + d.section + '">' + body +
-        '<title>' + esc(d.name) + '</title></g>';
-    }).join('');
-    document.getElementById('mapViewport').innerHTML =
-      '<svg viewBox="0 0 1000 640" role="img" aria-label="Map of Leonida with secret locations">' +
-            '<defs><clipPath id="landClip"><path d="M178,128 L205,92 L255,58 L300,48 L350,55 L410,52 L470,58 L540,68 L585,72 L660,82 L730,100 L800,118 L860,140 L895,175 L918,235 L910,300 L895,360 L872,415 L845,455 L800,480 L730,498 L660,508 L580,512 L500,505 L420,498 L350,505 L290,488 L240,470 L205,445 L175,415 L158,375 L150,330 L158,285 L150,240 L165,195 Z"/></clipPath></defs>' +
-      // ---- v1.0.7: terrain restyle - our own hand-drawn map in the light +
-      // terrain style of the interactive map (light blue sea, green land, +
-      // grey Vice City, white roads). Same 1000x640 viewBox and same +
-      // landmass bounds - NO pin moved. No IGN tiles, no Rockstar art. +
-      '<rect width="1000" height="640" fill="#7fb9de"/>' +
-      // subtle sea depth contours +
-      '<g fill="none" stroke="#69a6cf" stroke-width="10" stroke-linecap="round" opacity="0.22">' +
-      '<path d="M60,120 C140,180 120,300 70,420"/>' +
-      '<path d="M945,470 C885,535 905,595 845,630"/>' +
-      '<path d="M110,560 C220,520 300,560 390,545"/>' +
-      '<path d="M860,40 C900,90 880,150 920,200"/>' +
-      '</g>' +
-      // mainland base: light green, sandy coastline +
-      '<path d="M178,128 L205,92 L255,58 L300,48 L350,55 L410,52 L470,58 L540,68 L585,72 L660,82 L730,100 L800,118 L860,140 L895,175 L918,235 L910,300 L895,360 L872,415 L845,455 L800,480 L730,498 L660,508 L580,512 L500,505 L420,498 L350,505 L290,488 L240,470 L205,445 L175,415 L158,375 L150,330 L158,285 L150,240 L165,195 Z" fill="#a8cf8a" stroke="#d9c48f" stroke-width="2.5"/>' +
-      // terrain variation, clipped to the mainland +
-      '<g clip-path="url(#landClip)">' +
-      // Grassrivers swamp (west) - darker green +
-      '<path d="M150,280 C170,250 230,240 270,270 C310,300 300,360 270,400 C230,440 180,430 160,390 C140,350 140,310 150,280 Z" fill="#69ad60" opacity="0.9"/>' +
-      // Mt. Kalaga highlands (north-centre) +
-      '<path d="M380,50 C440,40 520,45 570,60 C600,75 580,105 520,112 C450,118 390,105 375,85 C365,68 368,55 380,50 Z" fill="#8fbf74" opacity="0.9"/>' +
-      // forest patches +
-      '<ellipse cx="660" cy="120" rx="70" ry="26" fill="#7fb96e" opacity="0.7"/>' +
-      '<ellipse cx="430" cy="240" rx="60" ry="30" fill="#7fb96e" opacity="0.6"/>' +
-      '<ellipse cx="360" cy="450" rx="55" ry="24" fill="#7fb96e" opacity="0.55"/>' +
-      '<ellipse cx="760" cy="470" rx="40" ry="18" fill="#8fbf74" opacity="0.6"/>' +
-      '<ellipse cx="300" cy="180" rx="45" ry="20" fill="#7fb96e" opacity="0.5"/>' +
-      // Vice City urban area - light grey +
-      '<path d="M610,205 L800,205 L818,250 L802,380 L620,380 L600,300 Z" fill="#dcdcdc"/>' +
-      // Water: Cottonmouth Lake + two swamp channels +
-      '<ellipse cx="210" cy="335" rx="30" ry="16" fill="#6fb3e0"/>' +
-      '<g fill="none" stroke="#6fb3e0" stroke-width="5" stroke-linecap="round" opacity="0.9">' +
-      '<path d="M168,300 C195,322 215,342 228,368"/>' +
-      '<path d="M188,418 C212,432 236,444 258,454"/>' +
-      '</g>' +
-      // Highways & main roads - pale casing, white core +
-      '<g fill="none" stroke="#b7c8b4" stroke-linecap="round" opacity="0.9">' +
-      '<path d="M250,140 L290,80 L400,64 L540,72 L650,88 L730,104" stroke-width="6"/>' +
-      '<path d="M250,140 L222,250 L200,340" stroke-width="5"/>' +
-      '<path d="M155,320 L230,355 L320,385" stroke-width="5"/>' +
-      '<path d="M210,350 L270,425 L350,465" stroke-width="5"/>' +
-      '<path d="M180,450 L350,490 L580,500 L790,470" stroke-width="6"/>' +
-      '<path d="M690,310 L650,410 L605,490" stroke-width="5"/>' +
-      '<path d="M888,168 L908,235 L900,330 L878,415" stroke-width="6"/>' +
-      '</g>' +
-      '<g fill="none" stroke="#ffffff" stroke-linecap="round" opacity="0.95">' +
-      '<path d="M250,140 L290,80 L400,64 L540,72 L650,88 L730,104" stroke-width="3.5"/>' +
-      '<path d="M250,140 L222,250 L200,340" stroke-width="3"/>' +
-      '<path d="M155,320 L230,355 L320,385" stroke-width="3"/>' +
-      '<path d="M210,350 L270,425 L350,465" stroke-width="3"/>' +
-      '<path d="M180,450 L350,490 L580,500 L790,470" stroke-width="4"/>' +
-      '<path d="M690,310 L650,410 L605,490" stroke-width="3"/>' +
-      '<path d="M888,168 L908,235 L900,330 L878,415" stroke-width="4"/>' +
-      '</g>' +
-      // Vice City street grid - denser, white on the grey urban area +
-      '<g fill="none" stroke="#ffffff" stroke-width="1.2" opacity="0.75">' +
-      '<path d="M620,212 L620,372"/><path d="M648,212 L648,372"/><path d="M676,212 L676,372"/><path d="M704,212 L704,372"/><path d="M732,212 L732,372"/><path d="M760,212 L760,372"/><path d="M788,212 L788,372"/>' +
-      '<path d="M612,222 L796,222"/><path d="M612,248 L796,248"/><path d="M612,274 L796,274"/><path d="M612,300 L796,300"/><path d="M612,326 L796,326"/><path d="M612,352 L796,352"/>' +
-      '</g>' +
-      // Airport runways south of Vice City +
-      '<g fill="#c9c9c9" stroke="#ffffff" stroke-width="1">' +
-      '<rect x="655" y="398" width="85" height="9" rx="2" transform="rotate(-8 697 402)"/>' +
-      '<rect x="660" y="416" width="70" height="7" rx="2" transform="rotate(-8 695 419)"/>' +
-      '</g>' +
-      // Bridges to the Keys - white +
-      '<g fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.9">' +
-      '<path d="M300,490 L300,558"/><path d="M420,498 L420,570"/><path d="M540,508 L540,562"/>' +
-      '</g>' +
-      '</g>' +
-      // Beach sand along the east coast (Vice Beach) and the south coast - +
-      // straddles the shoreline, so it reads as beach + shallow water. +
-      '<path d="M890,170 L910,235 L902,330 L878,415" fill="none" stroke="#e9d9a0" stroke-width="9" stroke-linecap="round" opacity="0.95"/>' +
-      '<path d="M845,455 L800,480 L730,498 L660,508 L580,512" fill="none" stroke="#e9d9a0" stroke-width="5" stroke-linecap="round" opacity="0.7"/>' +
-      // Keys chain + islands - green with sandy edges +
-      '<g fill="#a8cf8a" stroke="#e0cd96" stroke-width="2">' +
-      '<ellipse cx="300" cy="570" rx="60" ry="14"/><ellipse cx="420" cy="585" rx="70" ry="14"/><ellipse cx="540" cy="575" rx="55" ry="12"/>' +
-      '<ellipse cx="170" cy="560" rx="34" ry="20"/><ellipse cx="340" cy="610" rx="30" ry="14"/>' +
-      '<ellipse cx="880" cy="170" rx="26" ry="34"/><ellipse cx="880" cy="270" rx="20" ry="26"/><ellipse cx="800" cy="470" rx="24" ry="16"/>' +
-      '<ellipse cx="345" cy="30" rx="48" ry="13"/>' +
-      '<ellipse cx="532" cy="560" rx="28" ry="14"/>' +
-      '</g>' +
-      '<text class="map-label" x="425" y="38">FEATHERSTONE</text>' +
-      '<text class="map-label" x="640" y="270">VICE CITY</text>' +
-      '<text class="map-label" x="800" y="330">VICE BEACH</text>' +
-      '<text class="map-label" x="330" y="545">LEONIDA KEYS</text>' +
-      '<text class="map-label" x="180" y="350">GRASSRIVERS</text>' +
-      '<text class="map-label" x="430" y="100">MT. KALAGA</text>' +
-      '<text class="map-label" x="210" y="130">PORT GELLHORN</text>' +
-      '<text class="map-label" x="560" y="500">HAMLET</text>' +
-      dotsSvg + '</svg>';
-    mReset();
-    // Taps open the detail sheet via the pointerup handler in initMapZoom
-    // (not a click handler): the map uses setPointerCapture, which retargets
-    // the click to the map wrapper, so a dot 'click' listener would never fire.
   }
 
   // One entry card, used by the list view and by the pin detail sheet.
@@ -360,6 +239,7 @@
       mapCard.hidden = false; listView.hidden = true;
       btn.textContent = '☰ List view';
       renderMap();
+      if (leafletMap) leafletMap.invalidateSize();
     } else {
       mapCard.hidden = true; listView.hidden = false;
       btn.textContent = '🗺️ Map view';
@@ -417,105 +297,22 @@
     if (listCard && listCard !== card) listCard.classList.toggle('found', cb.checked);
   });
 
-  // ---- direct zoom & pan on the main-screen map (like the IGN map) ----
-  // Pinch to zoom, scroll-wheel zoom, +/− buttons, drag to pan — all on the
-  // map itself, 1–6x, pan clamped so the map can't leave the viewport.
-  // A tap on a dot opens its detail card via pointerup (not a click
-  // listener): setPointerCapture retargets the click to the map wrapper,
-  // so a dot 'click' handler would never fire. A drag or pinch that
-  // starts on a dot (moved > 8px, or a second finger) does not open it.
-  var mScale = 1, mX = 0, mY = 0;
-  var mPointers = new Map();
-  var mPinch = null;
-  var mMoved = 0;
-  var mDownDot = null; // entry id if this gesture started on a dot
-  var mMaxPointers = 0;
-
-  function mApply() {
-    var vp = document.getElementById('mapViewport');
-    if (vp) vp.style.transform = 'translate(' + mX + 'px,' + mY + 'px) scale(' + mScale + ')';
-  }
-  function mClampPan() {
-    var wrap = document.getElementById('mapWrap');
-    var w = wrap.clientWidth, h = wrap.clientHeight;
-    var mx = Math.max(0, (w * mScale - w) / 2), my = Math.max(0, (h * mScale - h) / 2);
-    mX = Math.max(-mx, Math.min(mx, mX));
-    mY = Math.max(-my, Math.min(my, mY));
-  }
-  function mZoomAt(cx, cy, factor) {
-    var ns = Math.max(1, Math.min(6, mScale * factor));
-    mX = cx - (cx - mX) * (ns / mScale);
-    mY = cy - (cy - mY) * (ns / mScale);
-    mScale = ns; mClampPan(); mApply();
-  }
-  function mReset() { mScale = 1; mX = 0; mY = 0; mApply(); }
-  function mCenter(ev) {
-    var r = document.getElementById('mapWrap').getBoundingClientRect();
-    return { x: ev.clientX - (r.left + r.width / 2), y: ev.clientY - (r.top + r.height / 2) };
-  }
-  function initMapZoom() {
-    var wrap = document.getElementById('mapWrap');
-    document.getElementById('mapZoomIn').addEventListener('click', function () { mZoomAt(0, 0, 1.5); });
-    document.getElementById('mapZoomOut').addEventListener('click', function () { mZoomAt(0, 0, 1 / 1.5); });
-    document.getElementById('mapZoomReset').addEventListener('click', mReset);
+  // ---- map controls: zoom buttons, reset, full-screen (Leaflet) ----
+  // Pinch/scroll zoom and drag pan are native to Leaflet. The +/−/Reset
+  // buttons call the map directly; the full-screen button pins the map
+  // to the viewport (same map instance, invalidateSize on toggle).
+  function initMapControls() {
+    document.getElementById('mapZoomIn').addEventListener('click', function () { if (leafletMap) leafletMap.zoomIn(); });
+    document.getElementById('mapZoomOut').addEventListener('click', function () { if (leafletMap) leafletMap.zoomOut(); });
+    document.getElementById('mapZoomReset').addEventListener('click', function () {
+      if (!leafletMap) return;
+      var M = window.GTA6_MAP;
+      leafletMap.fitBounds([[-21000 * M.s0, 0], [0, 17000 * M.s0]]);
+    });
     document.getElementById('mapZoomFull').addEventListener('click', function () {
-      var svg = document.querySelector('#mapViewport svg');
-      if (svg) zOpen(svg.outerHTML, 'map');
+      document.getElementById('mapWrap').classList.toggle('map-fullscreen');
+      if (leafletMap) setTimeout(function () { leafletMap.invalidateSize(); }, 50);
     });
-    wrap.addEventListener('wheel', function (ev) {
-      ev.preventDefault();
-      var c = mCenter(ev);
-      mZoomAt(c.x, c.y, ev.deltaY < 0 ? 1.15 : 1 / 1.15);
-    }, { passive: false });
-    wrap.addEventListener('pointerdown', function (ev) {
-      if (ev.target.closest && ev.target.closest('.map-controls')) return;
-      if (mPointers.size === 0) {
-        mMoved = 0;
-        mMaxPointers = 0;
-        var dot = ev.target.closest ? ev.target.closest('.map-dot') : null;
-        mDownDot = dot ? dot.dataset.entry : null;
-      }
-      try { wrap.setPointerCapture(ev.pointerId); } catch (e) { /* synthetic events */ }
-      mPointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
-      mMaxPointers = Math.max(mMaxPointers, mPointers.size);
-      if (mPointers.size === 2) {
-        var pts = Array.from(mPointers.values());
-        mPinch = { d0: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y), s0: mScale, x0: mX, y0: mY };
-      }
-    });
-    wrap.addEventListener('pointermove', function (ev) {
-      if (!mPointers.has(ev.pointerId)) return;
-      var prev = mPointers.get(ev.pointerId);
-      mMoved += Math.abs(ev.clientX - prev.x) + Math.abs(ev.clientY - prev.y);
-      mPointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
-      if (mPointers.size === 1) {
-        mX += ev.clientX - prev.x; mY += ev.clientY - prev.y;
-        mClampPan(); mApply();
-      } else if (mPointers.size === 2 && mPinch) {
-        var pts = Array.from(mPointers.values());
-        var d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
-        var mx = (pts[0].x + pts[1].x) / 2, my = (pts[0].y + pts[1].y) / 2;
-        var r = wrap.getBoundingClientRect();
-        var cx = mx - (r.left + r.width / 2), cy = my - (r.top + r.height / 2);
-        var ns = Math.max(1, Math.min(6, mPinch.s0 * (d / mPinch.d0)));
-        mX = cx - (cx - mPinch.x0) * (ns / mPinch.s0);
-        mY = cy - (cy - mPinch.y0) * (ns / mPinch.s0);
-        mScale = ns; mClampPan(); mApply();
-      }
-    });
-    function mEnd(ev) {
-      mPointers.delete(ev.pointerId);
-      if (mPointers.size < 2) mPinch = null;
-      if (mPointers.size === 0) {
-        // A clean single-pointer tap that started on a dot opens its detail.
-        // A drag or pinch (moved > 8px, or a second finger joined) does not.
-        if (mMaxPointers === 1 && mDownDot && mMoved <= 8) openDetail(mDownDot);
-        mDownDot = null;
-        mMaxPointers = 0;
-      }
-    }
-    wrap.addEventListener('pointerup', mEnd);
-    wrap.addEventListener('pointercancel', mEnd);
   }
 
   // ---- full-screen zoom viewer for the main map and per-entry sketches ----
@@ -641,6 +438,6 @@
   };
 
   render();
-  initMapZoom();
+  initMapControls();
   initZoom();
 })();
